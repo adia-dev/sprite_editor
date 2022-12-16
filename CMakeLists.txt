@@ -4,6 +4,7 @@ project(app LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(SFML_LIBS sfml-graphics sfml-audio)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 
