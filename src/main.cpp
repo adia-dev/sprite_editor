@@ -1,5 +1,5 @@
-#include "./application/Application.h"
+#include "application/Application.h"
 
 int main() {
-	se::Application::Get().Run();
+	return se::Application::Get().Run();
 }
