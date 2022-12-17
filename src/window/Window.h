@@ -3,18 +3,12 @@
 //
 #pragma once
 
-#include "imgui-SFML.h"
-#include "imgui.h"
-
-#include <SFML/Graphics.hpp>
-#include <SFML/System/Clock.hpp>
-#include <SFML/Window/Event.hpp>
-#include <iostream>
+#include "../components/Components.h"
 
 namespace se {
 	// Window
 	class Window {
-	public:
+	  public:
 		Window();
 		~Window();
 
@@ -24,7 +18,7 @@ namespace se {
 		void Update();
 		void Render();
 
-	private:
+	  private:
 		uint16_t _width  = 2560;
 		uint16_t _height = 1600;
 
@@ -40,7 +34,7 @@ namespace se {
 		// Init methods
 		int Init();
 
-	public:
+	  public:
 		static void      setFancyImguiStyle();
 		static sf::Color ImVec4toSFColor(ImVec4 color);
 	};
