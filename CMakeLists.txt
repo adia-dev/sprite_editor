@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(app LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(SFML_LIBS sfml-graphics sfml-audio)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -10,7 +10,7 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 
 # Dear ImGui
 set(IMGUI_DIR include/imgui)
-include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
+include_directories(src/ src/**/ ${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
 
 set(IMGUI_SRC ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui_demo.cpp ${IMGUI_DIR}/imgui_draw.cpp ${IMGUI_DIR}/imgui_tables.cpp ${IMGUI_DIR}/imgui_widgets.cpp ${IMGUI_DIR}/imgui-SFML.cpp)
 
