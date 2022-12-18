@@ -79,15 +79,43 @@ namespace se {
 		static ImVec4      circleColor {1.0f, 0.0f, 1.0f, 0.5f};
 		static float       circleRadius = 100.f;
 		static std::size_t circlePoints = 30;
+		// position, rotation, scale
+		static sf::Vector2f position {250, 250};
+		static float        rotation = 0.f;
+		static sf::Vector2f scale {1, 1};
 
 		sf::CircleShape shape {circleRadius, circlePoints};
 		shape.setFillColor(ImVec4toSFColor(circleColor));
+		shape.setPosition(position);
+		shape.setRotation(rotation);
+		shape.setScale(scale);
 
 		static ImVec2     viewportSize {500, 500};
 		sf::RenderTexture rt {};
 		rt.create(viewportSize.x, viewportSize.y);
 
-		rt.clear(sf::Color::Black);
+		rt.clear(sf::Color(11, 11, 11));
+
+		// draw a grid of lines spaced 50 pixels apart
+		sf::VertexArray lines(sf::Lines, 2 * (viewportSize.x + viewportSize.y));
+		for (int i = 0; i < viewportSize.x; i += 50) {
+			lines[2 * i].color        = sf::Color(50, 50, 50, 100);
+			lines[2 * i + 1].color    = sf::Color(50, 50, 50, 100);
+			lines[2 * i].position     = sf::Vector2f(i, 0);
+			lines[2 * i + 1].position = sf::Vector2f(i, viewportSize.y);
+		}
+
+		for (int i = 0; i < viewportSize.y; i += 50) {
+			lines[2 * i + 2 * viewportSize.x].color =
+			    sf::Color(50, 50, 50, 100);
+			lines[2 * i + 2 * viewportSize.x + 1].color =
+			    sf::Color(50, 50, 50, 100);
+			lines[2 * i + 2 * viewportSize.x].position = sf::Vector2f(0, i);
+			lines[2 * i + 2 * viewportSize.x + 1].position =
+			    sf::Vector2f(viewportSize.x, i);
+		}
+
+		rt.draw(lines);
 		rt.draw(shape);
 
 		ImGui::PushFont(_imFont);
@@ -116,6 +144,14 @@ namespace se {
 
 			ImGui::DragFloat("Circle Radius", &circleRadius);
 			ImGui::DragInt("Circle Points", (int*)&circlePoints, 1.0f, 3, 500);
+			// Position rotation and scale
+			ImGui::DragFloat2("Position",
+			                  (float*)&position,
+			                  1.0f,
+			                  0,
+			                  viewportSize.x);
+			ImGui::DragFloat("Rotation", &rotation, 1.0f, 0, 360);
+			ImGui::DragFloat2("Scale", (float*)&scale, 1.0f, 0, 500);
 		}
 		ImGui::End();
 
