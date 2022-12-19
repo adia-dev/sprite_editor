@@ -3,39 +3,34 @@
 //
 #pragma once
 
-#include "../components/Components.h"
+#include "components/Components.h"
 
-namespace se
-{
+namespace se {
 	// Window
-	class Window
-	{
-	public:
+	class Window {
+	  public:
 		Window();
 		~Window();
 
-		bool isOpen() const
-		{
-			return _window != nullptr && _window->isOpen();
-		}
+		bool isOpen() const { return _window != nullptr && _window->isOpen(); }
 
 		void HandleEvents();
 		void Update();
 		void Render();
 		void ShutDown();
 
-	private:
-		uint16_t _width = 2560;
+	  private:
+		uint16_t _width  = 2560;
 		uint16_t _height = 1600;
 
 		// SFML variables
 		sf::RenderWindow* _window = nullptr;
 		sf::RenderTexture _renderTexture;
-		sf::Clock _clock;
+		sf::Clock         _clock;
 
 		// ImGui variables
-		ImFont* _imFont = nullptr;
-		ImGuiIO* _imIO = nullptr;
+		ImFont*   _imFont         = nullptr;
+		ImGuiIO*  _imIO           = nullptr;
 		u_int16_t _imageTextureId = 0;
 
 		// Application Variables
@@ -44,8 +39,8 @@ namespace se
 		// Init methods
 		int Init();
 
-	public:
-		static void setFancyImguiStyle();
+	  public:
+		static void      setFancyImguiStyle();
 		static sf::Color ImVec4toSFColor(ImVec4 color);
 	};
 } // namespace se

@@ -1,9 +1,6 @@
 #pragma once
 
-#include "../utils/File.h"
-#include "imgui-SFML.h"
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "utils/File.h"
 
 // #include "../utils/Utils.h"
 // #include "../utils/Logger.h"
@@ -16,13 +13,11 @@
 
 class Application;
 
-namespace se
-{
-	class Components
-	{
-	public:
-		Components() { }
-		~Components() { }
+namespace se {
+	class Components {
+	  public:
+		Components() {}
+		~Components() {}
 
 		/* Components */
 		static void MenuBar(uint16_t windowWidth);
@@ -31,24 +26,8 @@ namespace se
 		static void Hierarchy();
 		static void Properties();
 
-	private:
+	  private:
 		static void HelpMarker(const char* desc);
-
-		static std::string exec(const std::string& cmd)
-		{
-			char buffer[128];
-			std::string result;
-			std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
-			if(!pipe)
-			{
-				throw std::runtime_error("popen() failed!");
-			}
-			while(fgets(buffer, strlen(buffer), pipe.get()) != nullptr)
-			{
-				result += buffer;
-			}
-			return result;
-		}
 	};
 
 } // namespace se

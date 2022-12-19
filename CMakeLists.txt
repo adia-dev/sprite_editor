@@ -10,7 +10,7 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 
 # Dear ImGui
 set(IMGUI_DIR include/imgui)
-include_directories(src/ src/**/ ${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
+include_directories(src/ ${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
 
 set(IMGUI_SRC ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui_demo.cpp ${IMGUI_DIR}/imgui_draw.cpp ${IMGUI_DIR}/imgui_tables.cpp ${IMGUI_DIR}/imgui_widgets.cpp ${IMGUI_DIR}/imgui-SFML.cpp)
 
