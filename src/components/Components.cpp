@@ -185,15 +185,22 @@ namespace se
 	{
 		ImGui::Begin("Content Browser");
 
+		static int buttonSize = 200;
+		static ImVec2 buttonSizeVec(buttonSize, buttonSize);
+
+		if(ImGui::SliderInt("ButonSize", &buttonSize, 20, 200))
+		{
+			buttonSizeVec = ImVec2(buttonSize, buttonSize);
+		}
+
 		if(std::filesystem::exists(path))
 		{
 
 			ImGuiStyle& style = ImGui::GetStyle();
-			ImVec2 buttonSize(200, 200);
 			float windowVisible = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 			float lastButtonX = 0;
 
-			if(ImGui::Button("..", buttonSize))
+			if(ImGui::Button("..", buttonSizeVec))
 			{
 				if(path.has_parent_path())
 					path = path.parent_path();
@@ -203,7 +210,7 @@ namespace se
 			{
 				ImGui::PushID(directorEntry.path().relative_path().stem().c_str());
 
-				if(lastButtonX + style.ItemSpacing.x + buttonSize.x < windowVisible)
+				if(lastButtonX + style.ItemSpacing.x + buttonSize < windowVisible)
 					ImGui::SameLine();
 
 				if(directorEntry.is_directory())
@@ -214,7 +221,7 @@ namespace se
 					ImGui::PushStyleColor(ImGuiCol_ButtonActive,
 										  (ImVec4)ImColor::HSV(0.3f, 0.8f, 0.8f));
 					if(ImGui::Button(directorEntry.path().relative_path().stem().c_str(),
-									 buttonSize))
+									 buttonSizeVec))
 					{
 						path = directorEntry.path();
 					}
@@ -222,7 +229,8 @@ namespace se
 				}
 				else
 				{
-					ImGui::Button(directorEntry.path().relative_path().stem().c_str(), buttonSize);
+					ImGui::Button(directorEntry.path().relative_path().stem().c_str(),
+								  buttonSizeVec);
 				}
 				lastButtonX = ImGui::GetItemRectMax().x;
 
@@ -236,6 +244,15 @@ namespace se
 	void Components::Hierarchy()
 	{
 		ImGui::Begin("Hierarchy");
+
+		if(ImGui::TreeNode("Circle1"))
+		{
+			HelpMarker("The same contents can be accessed in 'Tools->Style Editor' or by calling "
+					   "the ShowStyleEditor() function.");
+			ImGui::ShowStyleEditor();
+			ImGui::TreePop();
+			ImGui::Separator();
+		}
 
 		ImGui::End();
 	}
