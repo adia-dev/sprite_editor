@@ -185,10 +185,15 @@ namespace se
 	{
 		ImGui::Begin("Content Browser");
 
+		static sf::Texture t;
+		t.loadFromFile(
+			"/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/resources/icons/directory.png");
+		static sf::Sprite s(t);
+
 		static int buttonSize = 200;
 		static ImVec2 buttonSizeVec(buttonSize, buttonSize);
 
-		if(ImGui::SliderInt("ButonSize", &buttonSize, 20, 200))
+		if(ImGui::SliderInt("Icon Size", &buttonSize, 20, 500))
 		{
 			buttonSizeVec = ImVec2(buttonSize, buttonSize);
 		}
@@ -215,17 +220,10 @@ namespace se
 
 				if(directorEntry.is_directory())
 				{
-					ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.8f, 0.6f, 0.6f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-										  (ImVec4)ImColor::HSV(0.2f, 0.7f, 0.7f));
-					ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-										  (ImVec4)ImColor::HSV(0.3f, 0.8f, 0.8f));
-					if(ImGui::Button(directorEntry.path().relative_path().stem().c_str(),
-									 buttonSizeVec))
+					if(ImGui::ImageButton(s))
 					{
 						path = directorEntry.path();
 					}
-					ImGui::PopStyleColor(3);
 				}
 				else
 				{
