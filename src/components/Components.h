@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/File.h"
+#include "managers/SpriteManager.h"
 
 // #include "../utils/Utils.h"
 // #include "../utils/Logger.h"
@@ -22,7 +22,7 @@ namespace se {
 		/* Components */
 		static void MenuBar(uint16_t windowWidth);
 		static void Console(const std::vector<std::string>& logs);
-		static void ContentBrowser(std::filesystem::path& path);
+		static void ContentBrowser();
 		static void Hierarchy();
 		static void Properties();
 

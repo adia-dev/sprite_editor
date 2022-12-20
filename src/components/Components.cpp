@@ -1,7 +1,6 @@
 #include "Components.h"
 
 #include "application/Application.h"
-#include "managers/AssetManager.h"
 
 namespace se {
 
@@ -176,7 +175,7 @@ namespace se {
 		ImGui::End();
 	}
 
-	void Components::ContentBrowser(std::filesystem::path& path) {
+	void Components::ContentBrowser() {
 		ImGui::Begin("Content Browser");
 
 		static int    buttonSize = 200;
@@ -186,6 +185,8 @@ namespace se {
 			buttonSizeVec = ImVec2(buttonSize, buttonSize);
 		}
 
+		const auto& path = Application::Get().GetCurrentDirectory();
+
 		if (std::filesystem::exists(path)) {
 			ImGuiStyle& style = ImGui::GetStyle();
 			float       windowVisible =
@@ -193,7 +194,8 @@ namespace se {
 			float lastButtonX = 0;
 
 			if (ImGui::Button("..", buttonSizeVec)) {
-				if (path.has_parent_path()) path = path.parent_path();
+				if (path.has_parent_path())
+					Application::Get().SetCurrentDirectory(path.parent_path());
 			}
 
 			for (auto& directorEntry :
@@ -209,7 +211,8 @@ namespace se {
 					if (ImGui::ImageButton(AssetManager::Get().GetTexture(
 					        "/Users/abdoulayedia/Projects/Dev/C++/"
 					        "sprite_editor/resources/icons/directory.png"))) {
-						path = directorEntry.path();
+						Application::Get().SetCurrentDirectory(
+						    directorEntry.path());
 					}
 				} else {
 					ImGui::Button(

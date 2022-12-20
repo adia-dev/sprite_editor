@@ -5,29 +5,31 @@
 
 #include "window/Window.h"
 
-namespace se
-{
+namespace se {
 	// Application
-	class Application
-	{
-	public:
-		static Application& Get()
-		{
+	class Application {
+	  public:
+		static Application& Get() {
 			static Application instance;
 			return instance;
 		}
 
-		int Run();
+		int  Run();
 		void Quit();
 
-	private:
+		std::filesystem::path& GetCurrentDirectory();
+		void SetCurrentDirectory(const std::filesystem::path& path);
+
+	  private:
 		Application();
 		~Application();
 
 		std::shared_ptr<Window> _window = nullptr;
+		std::filesystem::path   _currentDirectory =
+		    "/Users/abdoulayedia/Præojects/Dev/C++/sprite_editor/assets";
 
-	public:
-		Application(Application const&) = delete;
+	  public:
+		Application(Application const&)            = delete;
 		Application& operator=(const Application&) = delete;
 	};
 } // namespace se
