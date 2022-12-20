@@ -33,9 +33,6 @@ namespace se {
 		ImGuiIO*  _imIO           = nullptr;
 		u_int16_t _imageTextureId = 0;
 
-		// Application Variables
-		std::filesystem::path _currentDirectory;
-
 		// Init methods
 		int Init();
 
