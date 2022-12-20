@@ -266,10 +266,27 @@ namespace se {
 	void Components::Properties() {
 		ImGui::Begin("Properties");
 
+		static ImVec2      position {0, 0};
+		static float       scale = 1.f;
+		static sf::Sprite& sprite =
+		    Application::Get().GetSpriteManager().GetSprite();
+
 		if (ImGui::TreeNode("Goku")) {
 			HelpMarker("The same contents can be accessed in 'Tools->Style "
 			           "Editor' or by calling "
 			           "the ShowStyleEditor() function.");
+
+			if (ImGui::SliderFloat2("Position",
+			                        (float*)&position,
+			                        -1000,
+			                        1000)) {
+				sprite.setPosition(position.x, position.y);
+			}
+
+			if (ImGui::SliderFloat("Scale", &scale, 1, 10)) {
+				sprite.setScale(scale, scale);
+			}
+
 			ImGui::TreePop();
 			ImGui::Separator();
 		}

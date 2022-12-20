@@ -109,6 +109,42 @@ namespace se {
 			viewportSize = ImGui::GetWindowSize();
 			Application::Get().GetSpriteManager().Render(rt);
 			ImGui::Image(rt);
+
+			static ImVec2 startLeftMouseButtonPressedPos;
+			static bool   isLeftMouseButtonPressed = false;
+
+			// Store the starting mouse position when the mouse button is first
+			// pressed, and the window has focus
+			if (ImGui::IsMouseClicked(0) && ImGui::IsWindowFocused()) {
+				startLeftMouseButtonPressedPos = ImGui::GetIO().MousePos;
+				isLeftMouseButtonPressed       = true;
+			}
+
+			// Calculate the current mouse position and use it to determine the
+			// dimensions of the rectangle
+			if (ImGui::IsMouseDown(0) && isLeftMouseButtonPressed &&
+			    ImGui::IsWindowFocused()) {
+				ImVec2 mouse_pos = ImGui::GetIO().MousePos;
+				float  width  = mouse_pos.x - startLeftMouseButtonPressedPos.x;
+				float  height = mouse_pos.y - startLeftMouseButtonPressedPos.y;
+
+				ImDrawList* draw_list = ImGui::GetWindowDrawList();
+				draw_list->AddRect(
+				    ImVec2(startLeftMouseButtonPressedPos.x,
+				           startLeftMouseButtonPressedPos.y),
+				    ImVec2(startLeftMouseButtonPressedPos.x + width,
+				           startLeftMouseButtonPressedPos.y + height),
+				    IM_COL32(100, 0, 255, 255),
+				    0.0f,
+				    15,
+				    2.0f);
+			}
+
+			// Clear the rectangle when the mouse button is released
+			if (ImGui::IsMouseReleased(0) && isLeftMouseButtonPressed &&
+			    ImGui::IsWindowFocused()) {
+				isLeftMouseButtonPressed = false;
+			}
 		}
 
 		ImGui::End();
