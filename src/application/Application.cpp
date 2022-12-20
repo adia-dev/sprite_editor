@@ -6,7 +6,12 @@
 namespace se {
 
 	Application::Application() {
-		_window = std::make_shared<Window>();
+		_window           = std::make_shared<Window>();
+		_currentDirectory = __CURRENT_DIR__;
+		_spriteManager.LoadSprite(
+		    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/"
+		    "images/"
+		    "spritesheets/goku/1.png");
 	}
 
 	Application::~Application() {}
@@ -33,6 +38,10 @@ namespace se {
 
 	void Application::SetCurrentDirectory(const std::filesystem::path& path) {
 		_currentDirectory = path;
+	}
+
+	SpriteManager& Application::GetSpriteManager() {
+		return _spriteManager;
 	}
 
 } // namespace se

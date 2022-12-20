@@ -20,13 +20,15 @@ namespace se {
 		std::filesystem::path& GetCurrentDirectory();
 		void SetCurrentDirectory(const std::filesystem::path& path);
 
+		SpriteManager& GetSpriteManager();
+
 	  private:
 		Application();
 		~Application();
 
 		std::shared_ptr<Window> _window = nullptr;
-		std::filesystem::path   _currentDirectory =
-		    "/Users/abdoulayedia/Præojects/Dev/C++/sprite_editor/assets";
+		SpriteManager           _spriteManager;
+		std::filesystem::path   _currentDirectory;
 
 	  public:
 		Application(Application const&)            = delete;
