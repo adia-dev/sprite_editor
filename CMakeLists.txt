@@ -27,4 +27,4 @@ target_link_libraries(app PRIVATE ${SFML_LIBS} ${LIBRARIES})
 target_compile_features(app PRIVATE cxx_std_17)
 
 install(TARGETS app)
-target_compile_definitions(app PUBLIC -DImTextureID=ImU64)
+target_compile_definitions(app PUBLIC -DImTextureID=ImU64 -D__CURRENT_DIR__="../")
