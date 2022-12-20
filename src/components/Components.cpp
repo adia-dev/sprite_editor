@@ -198,25 +198,45 @@ namespace se {
 					Application::Get().SetCurrentDirectory(path.parent_path());
 			}
 
-			for (auto& directorEntry :
+			for (auto& directoryEntry :
 			     std::filesystem::directory_iterator(path)) {
 				ImGui::PushID(
-				    directorEntry.path().relative_path().stem().c_str());
+				    directoryEntry.path().relative_path().stem().c_str());
 
 				if (lastButtonX + style.ItemSpacing.x + buttonSize <
 				    windowVisible)
 					ImGui::SameLine();
 
-				if (directorEntry.is_directory()) {
-					if (ImGui::ImageButton(AssetManager::Get().GetTexture(
-					        "/Users/abdoulayedia/Projects/Dev/C++/"
-					        "sprite_editor/resources/icons/directory.png"))) {
+				if (directoryEntry.is_directory()) {
+					// if (ImGui::ImageButton(AssetManager::Get().GetTexture(
+					//         "/Users/abdoulayedia/Projects/Dev/C++/"
+					//         "sprite_editor/resources/icons/directory.png")))
+					//         {
+					// 	Application::Get().SetCurrentDirectory(
+					// 	    directoryEntry.path());
+					// }
+					ImGui::PushStyleColor(ImGuiCol_Button,
+					                      (ImVec4)ImColor(125, 125, 77, 125));
+					if (ImGui::Button(directoryEntry.path()
+					                      .relative_path()
+					                      .stem()
+					                      .c_str(),
+					                  buttonSizeVec))
 						Application::Get().SetCurrentDirectory(
-						    directorEntry.path());
+						    directoryEntry.path());
+					ImGui::PopStyleColor(1);
+				} else if (directoryEntry.path().extension().string().find(
+				               ".png") != std::string::npos) {
+					if (ImGui::ImageButton(
+					        AssetManager::Get().GetTexture(
+					            directoryEntry.path().c_str()),
+					        sf::Vector2f(buttonSize, buttonSize))) {
+						Application::Get().GetSpriteManager().LoadSprite(
+						    directoryEntry.path().c_str());
 					}
 				} else {
 					ImGui::Button(
-					    directorEntry.path().relative_path().stem().c_str(),
+					    directoryEntry.path().relative_path().stem().c_str(),
 					    buttonSizeVec);
 				}
 				lastButtonX = ImGui::GetItemRectMax().x;
@@ -245,6 +265,14 @@ namespace se {
 
 	void Components::Properties() {
 		ImGui::Begin("Properties");
+
+		if (ImGui::TreeNode("Goku")) {
+			HelpMarker("The same contents can be accessed in 'Tools->Style "
+			           "Editor' or by calling "
+			           "the ShowStyleEditor() function.");
+			ImGui::TreePop();
+			ImGui::Separator();
+		}
 
 		ImGui::End();
 	}
