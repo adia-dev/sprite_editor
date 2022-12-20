@@ -10,6 +10,7 @@ namespace se {
 	class SpriteManager {
 	  public:
 		SpriteManager() {}
+		SpriteManager(const sf::Sprite& sprite): _sprite(sprite) {}
 		~SpriteManager() {}
 
 		sf::Sprite& GetSprite() { return _sprite; }
@@ -18,7 +19,10 @@ namespace se {
 		void LoadSprite(const std::string& filepath);
 		void LoadSprite(sf::Texture& texture);
 
+		std::vector<sf::IntRect> SliceSprite(const std::string& filepath);
+
 	  private:
-		sf::Sprite _sprite;
+		sf::Sprite               _sprite;
+		std::vector<sf::IntRect> _frames;
 	};
 } // namespace se
