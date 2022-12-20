@@ -6,6 +6,9 @@ project(app LANGUAGES CXX)
 # Set the C++ standard to C++17
 set(CMAKE_CXX_STANDARD 17)
 
+# Allow debug symbols to be generated
+set(CMAKE_BUILD_TYPE Debug)
+
 # Set the SFML libraries to link to
 set(SFML_LIBS sfml-graphics sfml-audio)
 
