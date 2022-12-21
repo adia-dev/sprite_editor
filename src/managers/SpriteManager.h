@@ -5,6 +5,11 @@
 
 #include "managers/AssetManager.h"
 
+#include <opencv2/features2d.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+
 namespace se {
 	// SpriteManager
 	class SpriteManager {
@@ -20,6 +25,30 @@ namespace se {
 		void LoadSprite(sf::Texture& texture);
 
 		std::vector<sf::IntRect> SliceSprite(const std::string& filepath);
+		std::vector<sf::IntRect> SliceSprite(const std::string& filepath,
+		                                     const sf::IntRect& roiRect);
+		std::vector<sf::IntRect> SliceSprite(const sf::Texture& texture,
+		                                     const sf::IntRect& roiRect);
+
+		static cv::Mat TextureToOpenCVMat(const sf::Texture& texture);
+
+		static void removeTextureBackground(
+		    sf::Texture&     texture,
+		    uint16_t         x,
+		    u_int16_t        y,
+		    const sf::Color& newColor  = sf::Color::Transparent,
+		    double           threshold = 1.0);
+
+		sf::Texture removeTextureBackground(
+		    uint16_t         x,
+		    u_int16_t        y,
+		    const sf::Color& newColor  = sf::Color::Transparent,
+		    double           threshold = 1.0);
+
+		sf::Texture removeTextureBackground(
+		    const sf::Vector2i& pixelPosition,
+		    const sf::Color&    newColor  = sf::Color::Transparent,
+		    double              threshold = 1.0);
 
 	  private:
 		sf::Sprite               _sprite;
