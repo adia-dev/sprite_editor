@@ -34,6 +34,12 @@ namespace se {
 			                 color.w * 255);
 		}
 
+		static float lerp(float a, float b, float f) { return a + f * (b - a); }
+
+		static sf::Vector2f lerp(sf::Vector2f a, sf::Vector2f b, float f) {
+			return a + f * (b - a);
+		}
+
 	  private:
 		/* data */
 	};
