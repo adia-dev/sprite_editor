@@ -16,6 +16,11 @@ namespace se {
 		_sprite.setTexture(texture);
 	}
 
+	std::vector<sf::IntRect>
+	SpriteManager::SliceSprite(const sf::IntRect& roiRect) {
+		return SpriteManager::SliceSprite(*_sprite.getTexture(), roiRect);
+	}
+
 	/**
 	 * @brief Slices the given texture into individual sprite images using
 	 * OpenCV.
