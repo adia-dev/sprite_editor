@@ -4,6 +4,16 @@
 #include "SpriteManager.h"
 
 namespace se {
+	SpriteManager::SpriteManager() {}
+
+	SpriteManager::SpriteManager(const sf::Sprite& sprite): _sprite(sprite) {}
+
+	SpriteManager::~SpriteManager() {}
+
+	sf::Sprite& SpriteManager::GetSprite() {
+		return _sprite;
+	}
+
 	void SpriteManager::Render(sf::RenderTarget& target) const {
 		target.draw(_sprite);
 	}
@@ -21,19 +31,6 @@ namespace se {
 		return SpriteManager::SliceSprite(*_sprite.getTexture(), roiRect);
 	}
 
-	/**
-	 * @brief Slices the given texture into individual sprite images using
-	 * OpenCV.
-	 *
-	 * The region of interest rectangle (roiRect) allows you to specify a
-	 * specific area within the texture to slice. This can be useful if the
-	 * texture contains multiple sprite sheets or other unwanted content.
-	 *
-	 * @param texture The texture to slice.
-	 * @param roiRect The region of interest rectangle within the texture.
-	 * @return A vector of rectangles representing the bounding boxes of the
-	 * individual sprite images.
-	 */
 	std::vector<sf::IntRect>
 	SpriteManager::SliceSprite(const sf::Texture& texture,
 	                           const sf::IntRect& roiRect) {
