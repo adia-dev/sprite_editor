@@ -1,5 +1,13 @@
 #include "application/Application.h"
 
+float lerp(float a, float b, float f) {
+	return a + f * (b - a);
+}
+
+sf::Vector2f lerp(sf::Vector2f a, sf::Vector2f b, float f) {
+	return a + f * (b - a);
+}
+
 int main(int argc, char** argv) {
 	const char* filePath = "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/"
 	                       "assets/images/spritesheets/goku/1.png";
@@ -14,6 +22,8 @@ int main(int argc, char** argv) {
 	    "Test");
 	window.setFramerateLimit(60);
 	sf::Clock clock;
+	sf::Time  elapsedTime;
+	sf::View  view(sf::FloatRect(0, 0, window.getSize().x, window.getSize().y));
 
 	sf::Texture removeBackgroundTexture = *sm.GetSprite().getTexture();
 
@@ -30,6 +40,16 @@ int main(int argc, char** argv) {
 	roiRect.setFillColor(sf::Color::Transparent);
 	roiRect.setOutlineColor(sf::Color::Red);
 	roiRect.setOutlineThickness(1.f);
+
+	float mouseDelta = 0.f, previousMouseDelta = 0.f;
+	float zoomSpeed   = 3.f;
+	float minZoom     = 0.1f;
+	float maxZoom     = 10.f;
+	float currentZoom = 1.f, targetZoom = 1.f;
+
+	sf::Vector2f viewPos      = view.getCenter();
+	sf::Vector2f viewPosStart = viewPos;
+	sf::Vector2f viewPosDelta = sf::Vector2f(0.f, 0.f);
 
 	while (window.isOpen()) {
 		mousePos = sf::Mouse::getPosition(window);
@@ -59,14 +79,17 @@ int main(int argc, char** argv) {
 							    mousePos.y);
 							s.setTexture(removeBackgroundTexture);
 						}
-						start                    = sf::Vector2f(mousePos);
+						// set the start position considering the view
+						start = sf::Vector2f(mousePos) -
+						        sf::Vector2f(viewPosDelta.x, -viewPosDelta.y);
 						isLeftMouseButtonPressed = true;
 					}
 					break;
 				case sf::Event::MouseButtonReleased:
 					if (event.mouseButton.button == sf::Mouse::Left) {
 						isLeftMouseButtonPressed = false;
-						end                      = sf::Vector2f(mousePos);
+						end                      = sf::Vector2f(mousePos) -
+						      sf::Vector2f(viewPosDelta.x, -viewPosDelta.y);
 
 						if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
 							slices =
@@ -78,16 +101,89 @@ int main(int argc, char** argv) {
 						}
 					}
 					break;
+				case sf::Event::MouseWheelScrolled:
+					previousMouseDelta = mouseDelta;
+					mouseDelta         = event.mouseWheelScroll.delta;
+
+					if (previousMouseDelta * mouseDelta < 0.f) {
+						targetZoom = currentZoom;
+						mouseDelta = 0.f;
+					}
+
+					if (mouseDelta > 0.f) {
+						targetZoom *= 1.1f;
+					} else if (mouseDelta < 0.f) {
+						targetZoom /= 1.1f;
+					}
+					break;
 				default:
 					break;
 			}
 		}
 
+		elapsedTime = clock.restart();
+
+		if (targetZoom < minZoom) {
+			targetZoom = minZoom;
+		} else if (targetZoom > maxZoom) {
+			targetZoom = maxZoom;
+		}
+
+		if (currentZoom != targetZoom) {
+			currentZoom = lerp(currentZoom,
+			                   targetZoom,
+			                   elapsedTime.asSeconds() * zoomSpeed);
+			view.setSize(window.getSize().x * currentZoom,
+			             window.getSize().y * currentZoom);
+			// move the view to the mouse position
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::LSystem)) {
+			viewPos = lerp(viewPos,
+			               sf::Vector2f(mousePos),
+			               elapsedTime.asSeconds() * zoomSpeed);
+			view.setCenter(viewPos);
+		}
+
+		viewPosDelta = viewPosStart - viewPos;
+
+		// dampen the zoom
+		targetZoom =
+		    lerp(targetZoom, currentZoom, elapsedTime.asSeconds() * zoomSpeed);
+
 		if (isLeftMouseButtonPressed) {
 			end = sf::Vector2f(mousePos);
 		}
 
+		// if we are on a WIN32 system, system("cls") will clear the console
+		// window,
+// else we will use the clear() function
+#ifdef _WIN32
+		system("cls");
+#else
+		std::cout << "\033[2J\033[1;1H";
+#endif
+
+		std::cout << "FPS: " << 1.f / elapsedTime.asSeconds() << std::endl;
+		std::cout << "Zoom: " << currentZoom << std::endl;
+		std::cout << "Mouse Position: " << mousePos.x << ", " << mousePos.y
+		          << std::endl;
+		std::cout << "Mouse Position (View): " << mousePos.x - viewPosDelta.x
+		          << ", " << mousePos.y + viewPosDelta.y << std::endl;
+		std::cout << "View Position Start: " << viewPosStart.x << ", "
+		          << viewPosStart.y << std::endl;
+		std::cout << "View Position: " << viewPos.x << ", " << viewPos.y
+		          << std::endl;
+		std::cout << "View Position Delta: " << viewPosDelta.x << ", "
+		          << viewPosDelta.y << std::endl;
+		std::cout << "View Size: " << view.getSize().x << ", "
+		          << view.getSize().y << std::endl;
+		std::cout << "Start: " << start.x << ", " << start.y << std::endl;
+		std::cout << "End: " << end.x << ", " << end.y << std::endl;
+		std::cout << "Slices: " << slices.size() << std::endl;
+
 		window.clear();
+		window.setView(view);
 
 		window.draw(s);
 
@@ -106,6 +202,7 @@ int main(int argc, char** argv) {
 			window.draw(roiRect);
 		}
 
+		window.setView(window.getDefaultView());
 		window.display();
 	}
 
