@@ -35,12 +35,11 @@ namespace se {
 		_imIO->FontGlobalScale = 1.25f;
 
 		_imFont = _imIO->Fonts->AddFontFromFileTTF(
-		    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/fonts/"
+		    "../assets/fonts/"
 		    "Operator-Mono/Fonts/OperatorMono-Medium.otf",
 		    20);
 
-		_imIO->IniFilename =
-		    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/src/imgui.ini";
+		_imIO->IniFilename = "../src/imgui.ini";
 
 		setFancyImguiStyle();
 
@@ -198,9 +197,8 @@ namespace se {
 				sf::Sprite sprite =
 				    Application::Get().GetSpriteManager().GetSprite();
 				sprite.setPosition(0, 0);
-				sprite.setTexture(AssetManager::Get().GetTexture(
-				    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/"
-				    "images/spritesheets/vegito/ssj_blue.png"));
+				sprite.setTexture(
+				    AssetManager::Get().GetTexture(__DEFAULT_SPRITE__));
 				sprite.setTextureRect(sf::IntRect(
 				    _boundingRects[i].left + startLeftMouseButtonPressedPos.x -
 				        viewportPos.x, // x

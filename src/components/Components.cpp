@@ -301,10 +301,7 @@ namespace se {
 		static int index                = 0;
 
 		if (frames.size() > 0) {
-			sf::Sprite s(AssetManager::Get().GetTexture(
-			    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/"
-			    "images/"
-			    "spritesheets/vegito/ssj_blue.png"));
+			sf::Sprite s(AssetManager::Get().GetTexture(__DEFAULT_SPRITE__));
 
 			index = (index + 1) % frames.size();
 
