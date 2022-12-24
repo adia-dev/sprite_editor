@@ -294,6 +294,30 @@ namespace se {
 		ImGui::End();
 	}
 
+	void Components::AnimationPreview(const std::vector<sf::IntRect>& frames) {
+		ImGui::Begin("Animation Preview");
+
+		ImVec2     animationPreviewSize = ImGui::GetWindowSize();
+		static int index                = 0;
+
+		if (frames.size() > 0) {
+			sf::Sprite s(AssetManager::Get().GetTexture(
+			    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/"
+			    "images/"
+			    "spritesheets/vegito/ssj_blue.png"));
+
+			index = (index + 1) % frames.size();
+
+			s.setTextureRect(frames[index]);
+
+			ImGui::Image(
+			    s,
+			    sf::Vector2f(animationPreviewSize.x, animationPreviewSize.y));
+		}
+
+		ImGui::End();
+	}
+
 	void Components::HelpMarker(const char* desc) {
 		ImGui::TextDisabled("(?)");
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {

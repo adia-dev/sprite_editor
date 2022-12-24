@@ -25,6 +25,8 @@ namespace se {
 		static void ContentBrowser();
 		static void Hierarchy();
 		static void Properties();
+		// static void Inspector();
+		static void AnimationPreview(const std::vector<sf::IntRect>& frames);
 
 	  private:
 		static void HelpMarker(const char* desc);
