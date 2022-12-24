@@ -8,9 +8,7 @@ namespace se {
 	Application::Application() {
 		_window           = std::make_shared<Window>();
 		_currentDirectory = __CURRENT_DIR__;
-		_spriteManager.LoadSprite(
-		    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/images/"
-		    "spritesheets/vegito/ssj_blue.png");
+		_spriteManager.LoadSprite(__DEFAULT_SPRITE__);
 	}
 
 	Application::~Application() {}

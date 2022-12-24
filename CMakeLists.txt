@@ -59,4 +59,4 @@ target_compile_features(app PRIVATE cxx_std_17)
 install(TARGETS app)
 
 # Add a compile definition for the app target
-target_compile_definitions(app PUBLIC -DImTextureID=ImU64 -D__CURRENT_DIR__="../")
+target_compile_definitions(app PUBLIC -DImTextureID=ImU64 -D__CURRENT_DIR__="../" -D__DEFAULT_SPRITE__="../assets/images/spritesheets/vegito/ssj_blue.png")

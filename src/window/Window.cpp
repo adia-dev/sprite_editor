@@ -193,7 +193,7 @@ namespace se {
 			static int selected = -1;
 			for (int i = 0; i < _boundingRects.size(); i++) {
 				char label[128];
-				sprintf(label, "Bounding rect %d", i);
+				snprintf(label, IM_ARRAYSIZE(label), "Bounding rect %d", i);
 
 				sf::Sprite sprite =
 				    Application::Get().GetSpriteManager().GetSprite();
@@ -228,7 +228,7 @@ namespace se {
 					// image button was clicked
 				}
 				ImGui::SameLine();
-				ImGui::Text(label);
+				ImGui::Text("%s", label);
 			}
 		}
 		ImGui::End();
