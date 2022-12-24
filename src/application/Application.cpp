@@ -9,9 +9,8 @@ namespace se {
 		_window           = std::make_shared<Window>();
 		_currentDirectory = __CURRENT_DIR__;
 		_spriteManager.LoadSprite(
-		    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/"
-		    "images/"
-		    "spritesheets/goku/1.png");
+		    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/images/"
+		    "spritesheets/vegito/ssj_blue.png");
 	}
 
 	Application::~Application() {}
