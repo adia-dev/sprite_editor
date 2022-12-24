@@ -36,7 +36,7 @@ namespace se {
 
 		_imFont = _imIO->Fonts->AddFontFromFileTTF(
 		    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/fonts/"
-		    "Poppins/Poppins-Regular.ttf",
+		    "Operator-Mono/Fonts/OperatorMono-Medium.otf",
 		    20);
 
 		_imIO->IniFilename =
@@ -90,6 +90,8 @@ namespace se {
 		ImGui::DockSpaceOverViewport();
 
 		static ImVec2 viewportSize {500, 500};
+		static ImVec2 viewportPos;
+		sf::IntRect   rect;
 
 		// initialize the viewport render texture
 		sf::RenderTexture rt {};
@@ -104,14 +106,14 @@ namespace se {
 		Components::Hierarchy();
 		Components::Properties();
 
+		static ImVec2 startLeftMouseButtonPressedPos;
+		static bool   isLeftMouseButtonPressed = false;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
 		if (ImGui::Begin("Viewport")) {
 			viewportSize = ImGui::GetWindowSize();
+			viewportPos  = ImGui::GetWindowPos();
 			Application::Get().GetSpriteManager().Render(rt);
 			ImGui::Image(rt);
-
-			static ImVec2 startLeftMouseButtonPressedPos;
-			static bool   isLeftMouseButtonPressed = false;
 
 			// Store the starting mouse position when the mouse button is first
 			// pressed, and the window has focus
@@ -129,11 +131,25 @@ namespace se {
 				float  height = mouse_pos.y - startLeftMouseButtonPressedPos.y;
 
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
+				rect = {static_cast<int>(startLeftMouseButtonPressedPos.x),
+				        static_cast<int>(startLeftMouseButtonPressedPos.y),
+				        static_cast<int>(width),
+				        static_cast<int>(height)};
+
+				// if the end position is less than the start position, swap
+				// them
+				if (width < 0) {
+					rect.left += rect.width;
+					rect.width *= -1;
+				}
+				if (height < 0) {
+					rect.top += rect.height;
+					rect.height *= -1;
+				}
+
 				draw_list->AddRect(
-				    ImVec2(startLeftMouseButtonPressedPos.x,
-				           startLeftMouseButtonPressedPos.y),
-				    ImVec2(startLeftMouseButtonPressedPos.x + width,
-				           startLeftMouseButtonPressedPos.y + height),
+				    ImVec2(rect.left, rect.top),
+				    ImVec2(rect.left + rect.width, rect.top + rect.height),
 				    IM_COL32(100, 0, 255, 255),
 				    0.0f,
 				    15,
@@ -145,9 +161,87 @@ namespace se {
 			    ImGui::IsWindowFocused()) {
 				isLeftMouseButtonPressed = false;
 			}
-		}
 
+			if (rect.width > 0 && rect.height > 0) {
+				rect.left -= viewportPos.x;
+				rect.top -= viewportPos.y;
+
+				_boundingRects =
+				    Application::Get().GetSpriteManager().SliceSprite(rect);
+				system("clear");
+				std::cout << "Bounding rects: " << _boundingRects.size()
+				          << std::endl;
+			}
+
+			for (auto& rect : _boundingRects) {
+				sf::RectangleShape shape;
+				shape.setPosition(rect.left + startLeftMouseButtonPressedPos.x -
+				                      viewportPos.x,
+				                  rect.top + startLeftMouseButtonPressedPos.y -
+				                      viewportPos.y);
+				shape.setSize(sf::Vector2f(rect.width, rect.height));
+				shape.setFillColor(sf::Color::Transparent);
+				shape.setOutlineColor(sf::Color::Red);
+				shape.setOutlineThickness(1);
+				rt.draw(shape);
+			}
+		}
 		ImGui::End();
+
+		ImGui::Begin("Bounding rects");
+		{
+			static int selected = -1;
+			for (int i = 0; i < _boundingRects.size(); i++) {
+				char label[128];
+				sprintf(label, "Bounding rect %d", i);
+
+				sf::Sprite sprite =
+				    Application::Get().GetSpriteManager().GetSprite();
+				sprite.setPosition(0, 0);
+				sprite.setTexture(AssetManager::Get().GetTexture(
+				    "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/"
+				    "images/spritesheets/vegito/ssj_blue.png"));
+				sprite.setTextureRect(sf::IntRect(
+				    _boundingRects[i].left + startLeftMouseButtonPressedPos.x -
+				        viewportPos.x, // x
+				    _boundingRects[i].top + startLeftMouseButtonPressedPos.y -
+				        viewportPos.y,       // y
+				    _boundingRects[i].width, // width
+				    _boundingRects[i].height // height
+				    ));
+
+				sf::Vector2f size;
+				// the size should make the sprite fit in the image button
+				// 100x100 without being distorted
+				if (sprite.getTextureRect().width >
+				    sprite.getTextureRect().height) {
+					size.x = 100;
+					size.y = sprite.getTextureRect().height *
+					         (100.f / sprite.getTextureRect().width);
+				} else {
+					size.y = 100;
+					size.x = sprite.getTextureRect().width *
+					         (100.f / sprite.getTextureRect().height);
+				}
+
+				if (ImGui::ImageButton(sprite, size)) {
+					// image button was clicked
+				}
+				ImGui::SameLine();
+				ImGui::Text(label);
+			}
+		}
+		ImGui::End();
+
+		auto temp = _boundingRects;
+
+		std::for_each(temp.begin(), temp.end(), [&](sf::IntRect& r) {
+			r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
+			r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
+		});
+
+		Components::AnimationPreview(temp);
+
 		ImGui::PopStyleVar();
 		ImGui::PopFont();
 

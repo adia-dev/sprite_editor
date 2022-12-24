@@ -24,9 +24,10 @@ namespace se {
 		uint16_t _height = 1600;
 
 		// SFML variables
-		sf::RenderWindow* _window = nullptr;
-		sf::RenderTexture _renderTexture;
-		sf::Clock         _clock;
+		sf::RenderWindow*        _window = nullptr;
+		sf::RenderTexture        _renderTexture;
+		sf::Clock                _clock;
+		std::vector<sf::IntRect> _boundingRects;
 
 		// ImGui variables
 		ImFont*   _imFont         = nullptr;
