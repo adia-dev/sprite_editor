@@ -230,6 +230,16 @@ namespace se {
 		_frames[_currentFrameIndex] = rect;
 	}
 
+	void SpriteManager::DeleteFrame(int index) {
+		if (index < 0 || index >= _frames.size()) return;
+
+		std::cout << "Deleting frame: " << index << std::endl;
+
+		_frames.erase(_frames.begin(), _frames.begin() + index);
+	}
+
+	void SpriteManager::AddFrame(const sf::IntRect& frame, int index) {}
+
 	void SpriteManager::SetAnimationTimer(float t) {
 		_animationTimer = t;
 	}

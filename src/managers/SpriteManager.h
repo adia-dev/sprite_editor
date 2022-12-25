@@ -209,6 +209,9 @@ namespace se {
 		sf::IntRect GetCurrentFrame() const;
 		void        SetCurrentFrame(const sf::IntRect &rect);
 
+		void DeleteFrame(int index);
+		void AddFrame(const sf::IntRect &frame, int index = -1);
+
 		void  SetAnimationTimer(float t);
 		float GetAnimationTimer() const;
 
