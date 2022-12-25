@@ -25,6 +25,7 @@ BreakBeforeBraces: Attach
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: "true"
+ColumnLimit: "120"
 Cpp11BracedListStyle: "true"
 DerivePointerAlignment: "true"
 FixNamespaceComments: "true"
