@@ -74,9 +74,10 @@ namespace se {
 		}
 	}
 
-	void Components::Console(const std::vector<std::string>& logs) {
+	void Components::Console() {
 		ImGui::Begin("Console");
 		static char searchBuffer[256] = {0};
+		const auto& logs              = Logger::Get().GetLogs();
 
 		// Inline buttons and a search bar
 		{
@@ -113,32 +114,40 @@ namespace se {
 		                  ImGuiWindowFlags_HorizontalScrollbar);
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
 		for (int i = 0; i < logs.size(); i++) {
-			// Clickable text, with action such has right click opens a menu
-			// with copy, etc.
-
 			// filter logs if searchBuffer is not empty
 			if (searchBuffer[0] != '\0') {
-				if (logs[i].find(searchBuffer) == std::string::npos) {
+				if (logs[i].message.find(searchBuffer) == std::string::npos) {
 					continue;
 				}
 			}
 
-			if (ImGui::Selectable(logs[i].c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
-				if (ImGui::IsMouseDoubleClicked(0)) {
-					// Do something on double click
-					std::cout << "Double clicked on: " << logs[i] << std::endl;
+			ImGui::PushID(i);
+			// Clickable text, with action such has right click opens a menu with copy, etc.
+			if (ImGui::Selectable("##LogSelectable", false, 0, ImVec2(0, 80))) {
+			}
+			ImGui::SameLine();
+			ImGui::BeginGroup();
+			{
+				ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+				                   "[%s]",
+				                   Application::TimeToString(logs[i].time).c_str());
+				ImGui::SameLine();
+				ImGui::TextColored(Logger::GetColor(logs[i].level), "%s", logs[i].message.c_str());
+				if (!logs[i].file.empty()) {
+					ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "[%s:%d]", logs[i].file.c_str(), logs[i].line);
 				}
 			}
+			ImGui::EndGroup();
 
 			// Right click on text
-			if (ImGui::BeginPopupContextItem()) {
+			if (ImGui::BeginPopupContextItem("##LogPopup")) {
 				if (ImGui::Selectable("Copy")) {
 					// Copy to clipboard
-					std::cout << "Copied: " << logs[i] << std::endl;
+					std::cout << "Copied: " << logs[i].message << std::endl;
 				}
 				if (ImGui::Selectable("Delete")) {
 					// Delete from logs
-					std::cout << "Deleted: " << logs[i] << std::endl;
+					std::cout << "Deleted: " << logs[i].message << std::endl;
 				}
 				if (ImGui::Selectable("Clear")) {
 					// Clear the log
@@ -146,6 +155,7 @@ namespace se {
 				}
 				ImGui::EndPopup();
 			}
+			ImGui::PopID();
 		}
 		if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f);
 
@@ -240,22 +250,39 @@ namespace se {
 			sf::IntRect currentFrame = Application::Get().GetSpriteManager().GetCurrentFrame();
 
 			if (currentFrame.width != -1) {
+				sf::IntRect saveCurrentFrame = currentFrame;
+
 				char label[256];
 				snprintf(label, IM_ARRAYSIZE(label), "Frame %d", currentFrameIndex);
 				ImGui::Text("%s", label);
 
-				float frameRect[4] = {static_cast<float>(currentFrame.left),
-				                      static_cast<float>(currentFrame.top),
-				                      static_cast<float>(currentFrame.width),
-				                      static_cast<float>(currentFrame.height)};
+				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+				if (ImGui::TreeNode("Transform")) {
+					float frameRect[4] = {static_cast<float>(currentFrame.left),
+					                      static_cast<float>(currentFrame.top),
+					                      static_cast<float>(currentFrame.width),
+					                      static_cast<float>(currentFrame.height)};
 
-				if (ImGui::SliderFloat4("slider float4", frameRect, 0.0f, 1000.0f)) {
-					currentFrame.left   = frameRect[0];
-					currentFrame.top    = frameRect[1];
-					currentFrame.width  = frameRect[2];
-					currentFrame.height = frameRect[3];
+					if (ImGui::DragFloat2("Position", frameRect, 1.f)) {
+						currentFrame.left = static_cast<int>(frameRect[0]);
+						currentFrame.top  = static_cast<int>(frameRect[1]);
+					}
+
+					if (ImGui::DragFloat2("Size", frameRect + 2, 1.f)) {
+						currentFrame.width  = static_cast<int>(frameRect[2]);
+						currentFrame.height = static_cast<int>(frameRect[3]);
+
+						// if the width or height is changed, we need to update the position to keep the same size
+						currentFrame.left += (saveCurrentFrame.width - currentFrame.width) / 2;
+						currentFrame.top += (saveCurrentFrame.height - currentFrame.height) / 2;
+					}
 
 					Application::Get().GetSpriteManager().SetCurrentFrame(currentFrame);
+					ImGui::TreePop();
+				}
+
+				if (ImGui::Button("Delete Frame")) {
+					Application::Get().GetSpriteManager().DeleteFrame(currentFrameIndex);
 				}
 			}
 		}
@@ -275,8 +302,8 @@ namespace se {
 		ImGui::SliderFloat("Speed", &speed, 0.1f, 10.f);
 		ImGui::SliderFloat("Delay", &delay, 0.1f, 10.f);
 
-		ImVec2     animationPreviewSize = ImGui::GetWindowSize();
-		static int index                = 0;
+		ImVec2     animationPreviewSize(300.f, 300.f);
+		static int index = 0;
 
 		if (frames.size() > 0) {
 			if (timer > delay) {
@@ -284,7 +311,7 @@ namespace se {
 				timer = 0.f;
 			}
 
-			sf::Sprite s(AssetManager::Get().GetTexture(__DEFAULT_SPRITE__));
+			sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
 			s.setTextureRect(frames[index]);
 			ImGui::Image(s, sf::Vector2f(animationPreviewSize.x, animationPreviewSize.y));
 		}
@@ -298,6 +325,7 @@ namespace se {
 			ImVec2 viewportSize                   = ImGui::GetWindowSize();
 			ImVec2 viewportPos                    = ImGui::GetWindowPos();
 			auto&  frames                         = Application::Get().GetSpriteManager().GetFrames();
+			auto   currentFrame                   = Application::Get().GetSpriteManager().GetCurrentFrame();
 			auto&  mousePos                       = Application::Get().GetWindow().GetMousePos();
 			auto&  startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
 			bool   isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
@@ -356,12 +384,18 @@ namespace se {
 
 			Application::Get().GetSpriteManager().SetFrames(frames);
 
-			for (auto& rect : frames) {
+			for (int i = 0; i < frames.size(); i++) {
+				auto               rect = frames[i];
 				sf::RectangleShape shape;
 				shape.setPosition(rect.left, rect.top);
 				shape.setSize(sf::Vector2f(rect.width, rect.height));
 				shape.setFillColor(sf::Color::Transparent);
-				shape.setOutlineColor(sf::Color::Red);
+
+				if (i == Application::Get().GetSpriteManager().GetCurrentFrameIndex())
+					shape.setOutlineColor(sf::Color::Green);
+				else
+					shape.setOutlineColor(sf::Color::Red);
+
 				shape.setOutlineThickness(1);
 				rt.draw(shape);
 			}

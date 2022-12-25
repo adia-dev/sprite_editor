@@ -21,7 +21,7 @@ namespace se {
 
 		/* Components */
 		static void MenuBar(uint16_t windowWidth);
-		static void Console(const std::vector<std::string>& logs);
+		static void Console();
 		static void ContentBrowser();
 		static void Hierarchy();
 		static void Properties();

@@ -107,7 +107,7 @@ namespace se {
 		ImGui::ShowDemoWindow();
 
 		Components::MenuBar(_width);
-		Components::Console({});
+		Components::Console();
 		Components::ContentBrowser();
 		Components::Hierarchy();
 		Components::Properties();
