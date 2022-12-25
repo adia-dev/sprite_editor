@@ -281,6 +281,15 @@ namespace se {
 					ImGui::TreePop();
 				}
 
+				ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+				if (ImGui::TreeNode("Frame")) {
+					sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
+					s.setTextureRect(currentFrame);
+					s.setScale(2.f, 2.f);
+					ImGui::Image(s);
+					ImGui::TreePop();
+				}
+
 				if (ImGui::Button("Delete Frame")) {
 					Application::Get().GetSpriteManager().DeleteFrame(currentFrameIndex);
 				}
@@ -296,24 +305,22 @@ namespace se {
 		const auto&  frames = Application::Get().GetSpriteManager().GetFrames();
 		static float timer  = 0.f;
 		static float speed  = 1.f;
-		static float delay  = 0.1f;
 		timer += speed * ImGui::GetIO().DeltaTime;
 
 		ImGui::SliderFloat("Speed", &speed, 0.1f, 10.f);
-		ImGui::SliderFloat("Delay", &delay, 0.1f, 10.f);
 
-		ImVec2     animationPreviewSize(300.f, 300.f);
-		static int index = 0;
+		sf::Vector2f animationPreviewSize(300.f, 300.f);
+		static int   index = 0;
 
 		if (frames.size() > 0) {
-			if (timer > delay) {
+			if (timer > 0.1f) {
 				index = (index + 1) % frames.size();
 				timer = 0.f;
 			}
 
 			sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
 			s.setTextureRect(frames[index]);
-			ImGui::Image(s, sf::Vector2f(animationPreviewSize.x, animationPreviewSize.y));
+			ImGui::Image(s, animationPreviewSize);
 		}
 
 		ImGui::End();
@@ -329,9 +336,9 @@ namespace se {
 			auto&  mousePos                       = Application::Get().GetWindow().GetMousePos();
 			auto&  startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
 			bool   isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
+			float  frameHeight                    = ImGui::GetFrameHeight();
 			sf::Vector2f viewPortMousePos =
-			    sf::Vector2f(mousePos.x - viewportPos.x,
-			                 mousePos.y - viewportPos.y - ImGui::GetFrameHeightWithSpacing());
+			    sf::Vector2f(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y - frameHeight);
 
 			// initialize the viewport render texture
 			sf::IntRect              rect;
@@ -370,7 +377,7 @@ namespace se {
 				                   15,
 				                   2.0f);
 			}
-			rect.height -= ImGui::GetFrameHeight();
+			rect.height -= frameHeight;
 
 			if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.left > 0 && rect.left < viewportSize.x &&
 			    rect.top > 0 && rect.top < viewportSize.y && rect.width > 0 && rect.height > 0 &&
@@ -400,7 +407,11 @@ namespace se {
 				else
 					shape.setOutlineColor(sf::Color::Red);
 
-				if (shape.getGlobalBounds().contains(viewPortMousePos)) shape.setOutlineColor(sf::Color::Blue);
+				if (shape.getGlobalBounds().contains(viewPortMousePos)) {
+					if (isLeftMouseButtonPressed) Application::Get().GetSpriteManager().SetCurrentFrameIndex(i);
+					shape.setOutlineColor(sf::Color::Blue);
+					shape.setFillColor(sf::Color(155, 255, 155, 50));
+				}
 
 				shape.setOutlineThickness(1);
 				rt.draw(shape);
