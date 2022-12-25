@@ -59,10 +59,6 @@ namespace se {
 		return _startLeftMouseButtonPressedPos;
 	}
 
-	std::vector<sf::IntRect> &Window::GetBoundingRects() {
-		return _boundingRects;
-	}
-
 	bool Window::GetIsLeftMouseButtonPressed() const {
 		return _isLeftMouseButtonPressed;
 	}

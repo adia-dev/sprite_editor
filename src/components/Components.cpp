@@ -239,9 +239,6 @@ namespace se {
 		if (currentFrameIndex != -1) {
 			sf::IntRect currentFrame = Application::Get().GetSpriteManager().GetCurrentFrame();
 
-			std::cout << "Current frame rect: " << currentFrame.left << ", " << currentFrame.top << ", "
-			          << currentFrame.width << ", " << currentFrame.height << std::endl;
-
 			if (currentFrame.width != -1) {
 				char label[256];
 				snprintf(label, IM_ARRAYSIZE(label), "Frame %d", currentFrameIndex);
@@ -300,7 +297,7 @@ namespace se {
 		if (ImGui::Begin("Viewport")) {
 			ImVec2 viewportSize                   = ImGui::GetWindowSize();
 			ImVec2 viewportPos                    = ImGui::GetWindowPos();
-			auto&  boundingRects                  = Application::Get().GetWindow().GetBoundingRects();
+			auto&  frames                         = Application::Get().GetSpriteManager().GetFrames();
 			auto&  mousePos                       = Application::Get().GetWindow().GetMousePos();
 			auto&  startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
 			bool   isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
@@ -343,21 +340,23 @@ namespace se {
 				                   2.0f);
 			}
 
-			if (ImGui::IsWindowFocused() && rect.left > 0 && rect.left < viewportSize.x && rect.top > 0 &&
-			    rect.top < viewportSize.y && rect.width > 0 && rect.height > 0 &&
+			if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.left > 0 && rect.left < viewportSize.x &&
+			    rect.top > 0 && rect.top < viewportSize.y && rect.width > 0 && rect.height > 0 &&
 			    rect.left + rect.width < viewportSize.x && rect.top + rect.height < viewportSize.y &&
 			    rect.left + rect.width > 0 && rect.top + rect.height > 0) {
 				rect.left -= viewportPos.x;
 				rect.top -= viewportPos.y;
 
-				boundingRects = Application::Get().GetSpriteManager().SliceSprite(rect);
-				std::for_each(boundingRects.begin(), boundingRects.end(), [&](sf::IntRect& r) {
+				frames = Application::Get().GetSpriteManager().SliceSprite(rect);
+				std::for_each(frames.begin(), frames.end(), [&](sf::IntRect& r) {
 					r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
 					r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
 				});
 			}
 
-			for (auto& rect : boundingRects) {
+			Application::Get().GetSpriteManager().SetFrames(frames);
+
+			for (auto& rect : frames) {
 				sf::RectangleShape shape;
 				shape.setPosition(rect.left, rect.top);
 				shape.setSize(sf::Vector2f(rect.width, rect.height));
@@ -366,8 +365,6 @@ namespace se {
 				shape.setOutlineThickness(1);
 				rt.draw(shape);
 			}
-
-			Application::Get().GetSpriteManager().SetFrames(boundingRects);
 		}
 		ImGui::End();
 	}
@@ -378,12 +375,12 @@ namespace se {
 			static int selected                  = -1;
 			ImVec2     viewportSize              = ImGui::GetWindowSize();
 			ImVec2     viewportPos               = ImGui::GetWindowPos();
-			auto&      boundingRects             = Application::Get().GetWindow().GetBoundingRects();
+			auto&      frames                    = Application::Get().GetSpriteManager().GetFrames();
 			auto&      mousePos                  = Application::Get().GetWindow().GetMousePos();
 			auto& startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
 			bool  isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
 
-			for (int i = 0; i < boundingRects.size(); i++) {
+			for (int i = 0; i < frames.size(); i++) {
 				ImGui::PushID(i);
 				char label[128];
 				snprintf(label, IM_ARRAYSIZE(label), "Frame %d", i);
@@ -391,15 +388,14 @@ namespace se {
 				sf::Sprite sprite = Application::Get().GetSpriteManager().GetSprite();
 				sprite.setPosition(0, 0);
 				sprite.setTexture(AssetManager::Get().GetTexture(__DEFAULT_SPRITE__));
-				sprite.setTextureRect(sf::IntRect(boundingRects[i].left,  // x
-				                                  boundingRects[i].top,   // y
-				                                  boundingRects[i].width, // width
-				                                  boundingRects[i].height // height
+				sprite.setTextureRect(sf::IntRect(frames[i].left,  // x
+				                                  frames[i].top,   // y
+				                                  frames[i].width, // width
+				                                  frames[i].height // height
 				                                  ));
 
 				sf::Vector2f size;
-				// the size should make the sprite fit in the image button
-				// 100x100 without being distorted
+				// the size should make the sprite fit in the image button 100x100 without being distorted
 				if (sprite.getTextureRect().width > sprite.getTextureRect().height) {
 					size.x = 100;
 					size.y = sprite.getTextureRect().height * (100.f / sprite.getTextureRect().width);

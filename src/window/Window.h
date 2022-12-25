@@ -19,10 +19,9 @@ namespace se {
 		void Render();
 		void ShutDown();
 
-		const ImVec2&             GetMousePos() const;
-		const ImVec2&             GetStartLeftMouseButtonPressedPos() const;
-		std::vector<sf::IntRect>& GetBoundingRects();
-		bool                      GetIsLeftMouseButtonPressed() const;
+		const ImVec2& GetMousePos() const;
+		const ImVec2& GetStartLeftMouseButtonPressedPos() const;
+		bool          GetIsLeftMouseButtonPressed() const;
 
 	  private:
 		uint16_t _width  = 2560;
@@ -37,10 +36,9 @@ namespace se {
 		ImFont*  _imFont = nullptr;
 		ImGuiIO* _imIO   = nullptr;
 
-		ImVec2                   _mousePos;
-		ImVec2                   _startLeftMouseButtonPressedPos;
-		std::vector<sf::IntRect> _boundingRects;
-		bool                     _isLeftMouseButtonPressed = false;
+		ImVec2 _mousePos;
+		ImVec2 _startLeftMouseButtonPressedPos;
+		bool   _isLeftMouseButtonPressed = false;
 
 		// Init methods
 		int Init();
