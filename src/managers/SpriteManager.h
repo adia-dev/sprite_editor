@@ -36,7 +36,7 @@ namespace se {
 		 *
 		 * @param sprite The sprite to use for the SpriteManager.
 		 */
-		SpriteManager(const sf::Sprite& sprite);
+		SpriteManager(const sf::Sprite &sprite);
 
 		/**
 		 * @brief Destroys the SpriteManager object.
@@ -49,7 +49,7 @@ namespace se {
 		 *
 		 * @return A reference to the sprite managed by the SpriteManager.
 		 */
-		sf::Sprite& GetSprite();
+		sf::Sprite &GetSprite();
 
 		/**
 		 * @brief Renders the sprite managed by the SpriteManager to the given
@@ -57,7 +57,7 @@ namespace se {
 		 *
 		 * @param target The render target to render the sprite to.
 		 */
-		void Render(sf::RenderTarget& target) const;
+		void Render(sf::RenderTarget &target) const;
 
 		/**
 		 * @brief Loads a sprite from file and sets it as the sprite managed by
@@ -65,7 +65,7 @@ namespace se {
 		 *
 		 * @param filepath The filepath of the sprite image to load.
 		 */
-		void LoadSprite(const std::string& filepath);
+		void LoadSprite(const std::string &filepath);
 
 		/**
 		 * @brief Sets the given texture as the sprite managed by the
@@ -74,7 +74,7 @@ namespace se {
 		 * @param texture The texture to use for the sprite managed by the
 		 * SpriteManager.
 		 */
-		void LoadSprite(sf::Texture& texture);
+		void LoadSprite(sf::Texture &texture);
 
 		/**
 		 * @brief Slices the sprite managed by the SpriteManager into individual
@@ -87,8 +87,7 @@ namespace se {
 		 * @return A vector of sf::IntRect objects representing the individual
 		 * frames of the sliced sprite.
 		 */
-		std::vector<sf::IntRect>
-		SliceSprite(const sf::IntRect& roiRect = {0, 0, 0, 0});
+		std::vector<sf::IntRect> SliceSprite(const sf::IntRect &roiRect = {0, 0, 0, 0});
 
 		/**
 		 * @brief Slices the given texture into individual frames.
@@ -101,8 +100,7 @@ namespace se {
 		 * @return A vector of sf::IntRect objects representing the individual
 		 * frames of the sliced texture.
 		 */
-		static std::vector<sf::IntRect> SliceSprite(const sf::Texture& texture,
-		                                            const sf::IntRect& roiRect);
+		static std::vector<sf::IntRect> SliceSprite(const sf::Texture &texture, const sf::IntRect &roiRect);
 
 		/**
 		 * @brief Slices the sprite at the given filepath into individual
@@ -113,8 +111,7 @@ namespace se {
 		 * @return A vector of sf::IntRect objects representing the individual
 		 * frames of the sliced sprite.
 		 */
-		static std::vector<sf::IntRect>
-		SliceSprite(const std::string& filepath);
+		static std::vector<sf::IntRect> SliceSprite(const std::string &filepath);
 
 		/**
 		 * @brief Slices the sprite at the given filepath into individual
@@ -128,8 +125,7 @@ namespace se {
 		 * @return A vector of sf::IntRect objects representing the individual
 		 * frames of the sliced sprite.
 		 */
-		static std::vector<sf::IntRect> SliceSprite(const std::string& filepath,
-		                                            const sf::IntRect& roiRect);
+		static std::vector<sf::IntRect> SliceSprite(const std::string &filepath, const sf::IntRect &roiRect);
 
 		/**
 		 * @brief Converts the given sf::Texture to an OpenCV Mat object.
@@ -138,7 +134,7 @@ namespace se {
 		 *
 		 * @return An OpenCV Mat object representing the given texture.
 		 */
-		static cv::Mat TextureToOpenCVMat(const sf::Texture& texture);
+		static cv::Mat TextureToOpenCVMat(const sf::Texture &texture);
 
 		/**
 		 * @brief Removes the background of the given texture and sets the new
@@ -157,12 +153,11 @@ namespace se {
 		 * @return A copy of the texture with the background removed and the new
 		 * background color set to the specified color.
 		 */
-		static void removeTextureBackground(
-		    sf::Texture&     texture,
-		    uint16_t         x,
-		    u_int16_t        y,
-		    const sf::Color& newColor  = sf::Color::Transparent,
-		    double           threshold = 1.0);
+		static void removeTextureBackground(sf::Texture     &texture,
+		                                    uint16_t         x,
+		                                    u_int16_t        y,
+		                                    const sf::Color &newColor  = sf::Color::Transparent,
+		                                    double           threshold = 1.0);
 
 		/**
 		 * @brief Removes the background of the sprite managed by the
@@ -181,11 +176,10 @@ namespace se {
 		 * @return A copy of the sprite's texture with the background removed
 		 * and the new background color set to the specified color.
 		 */
-		sf::Texture removeTextureBackground(
-		    uint16_t         x,
-		    u_int16_t        y,
-		    const sf::Color& newColor  = sf::Color::Transparent,
-		    double           threshold = 1.0);
+		sf::Texture removeTextureBackground(uint16_t         x,
+		                                    u_int16_t        y,
+		                                    const sf::Color &newColor  = sf::Color::Transparent,
+		                                    double           threshold = 1.0);
 
 		/**
 		 * @brief Removes the background of the sprite managed by the
@@ -202,15 +196,35 @@ namespace se {
 		 * @return A copy of the sprite's texture with the background removed
 		 * and the new background color set to the specified color.
 		 */
-		sf::Texture removeTextureBackground(
-		    const sf::Vector2i& pixelPosition,
-		    const sf::Color&    newColor  = sf::Color::Transparent,
-		    double              threshold = 1.0);
+		sf::Texture removeTextureBackground(const sf::Vector2i &pixelPosition,
+		                                    const sf::Color    &newColor  = sf::Color::Transparent,
+		                                    double              threshold = 1.0);
+
+		void                      SetFrames(const std::vector<sf::IntRect> &frames);
+		std::vector<sf::IntRect> &GetFrames();
+
+		void SetCurrentFrameIndex(int index);
+		int  GetCurrentFrameIndex() const;
+
+		sf::IntRect GetCurrentFrame() const;
+		void        SetCurrentFrame(const sf::IntRect &rect);
+
+		void  SetAnimationTimer(float t);
+		float GetAnimationTimer() const;
+
+		void UpdateAnimation(float dt);
+		void RenderAnimation(sf::RenderTarget &target);
 
 	  private:
-		sf::Sprite _sprite; ///< The sprite managed by the SpriteManager.
-		std::vector<sf::IntRect>
-		    _frames; ///< The individual frames of the sliced sprite.
+		sf::Sprite _sprite;          // The sprite managed by the SpriteManager.
+		sf::Sprite _animationSprite; // The sprite used for rendering the animation.
+
+		std::vector<sf::IntRect> _frames;      // The individual frames of the sliced sprite.
+		std::vector<sf::IntRect> _worldFrames; // The individual frames rectangles, transformed to world coordinates.
+
+		sf::IntRect _currentFrame;            // The current frame of the animation.
+		int         _currentFrameIndex = 0;   // The index of the current frame of the animation.
+		float       _animationTimer    = 0.f; // The timer used for animating the sprite.
 	};
 
 } // namespace se

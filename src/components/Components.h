@@ -26,7 +26,9 @@ namespace se {
 		static void Hierarchy();
 		static void Properties();
 		// static void Inspector();
-		static void AnimationPreview(const std::vector<sf::IntRect>& frames);
+		static void AnimationPreview();
+		static void Viewport();
+		static void Frames();
 
 	  private:
 		static void HelpMarker(const char* desc);

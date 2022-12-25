@@ -19,20 +19,28 @@ namespace se {
 		void Render();
 		void ShutDown();
 
+		const ImVec2&             GetMousePos() const;
+		const ImVec2&             GetStartLeftMouseButtonPressedPos() const;
+		std::vector<sf::IntRect>& GetBoundingRects();
+		bool                      GetIsLeftMouseButtonPressed() const;
+
 	  private:
 		uint16_t _width  = 2560;
 		uint16_t _height = 1600;
 
 		// SFML variables
-		sf::RenderWindow*        _window = nullptr;
-		sf::RenderTexture        _renderTexture;
-		sf::Clock                _clock;
-		std::vector<sf::IntRect> _boundingRects;
+		sf::RenderWindow* _window = nullptr;
+		sf::RenderTexture _renderTexture;
+		sf::Clock         _clock;
 
 		// ImGui variables
-		ImFont*   _imFont         = nullptr;
-		ImGuiIO*  _imIO           = nullptr;
-		u_int16_t _imageTextureId = 0;
+		ImFont*  _imFont = nullptr;
+		ImGuiIO* _imIO   = nullptr;
+
+		ImVec2                   _mousePos;
+		ImVec2                   _startLeftMouseButtonPressedPos;
+		std::vector<sf::IntRect> _boundingRects;
+		bool                     _isLeftMouseButtonPressed = false;
 
 		// Init methods
 		int Init();

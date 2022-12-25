@@ -18,9 +18,10 @@ namespace se {
 		void Quit();
 
 		std::filesystem::path& GetCurrentDirectory();
-		void SetCurrentDirectory(const std::filesystem::path& path);
+		void                   SetCurrentDirectory(const std::filesystem::path& path);
 
 		SpriteManager& GetSpriteManager();
+		Window&        GetWindow();
 
 	  private:
 		Application();

@@ -17,9 +17,7 @@ namespace se {
 	}
 
 	int Window::Init() {
-		_window = new sf::RenderWindow(sf::VideoMode(_width, _height),
-		                               "ImGui SFML",
-		                               sf::Style::Default);
+		_window = new sf::RenderWindow(sf::VideoMode(_width, _height), "ImGui SFML", sf::Style::Default);
 		if (_window == nullptr) {
 			std::cerr << "Could not create the window instance.\n";
 			return -1;
@@ -34,10 +32,7 @@ namespace se {
 		_imIO->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		_imIO->FontGlobalScale = 1.25f;
 
-		_imFont = _imIO->Fonts->AddFontFromFileTTF(
-		    "../assets/fonts/"
-		    "Operator-Mono/Fonts/OperatorMono-Medium.otf",
-		    20);
+		_imFont = _imIO->Fonts->AddFontFromFileTTF("../assets/fonts/Operator-Mono/Fonts/OperatorMono-Medium.otf", 20);
 
 		_imIO->IniFilename = "../src/imgui.ini";
 
@@ -54,6 +49,22 @@ namespace se {
 	void Window::ShutDown() {
 		if (_window == nullptr) return;
 		_window->close();
+	}
+
+	const ImVec2 &Window::GetMousePos() const {
+		return _mousePos;
+	}
+
+	const ImVec2 &Window::GetStartLeftMouseButtonPressedPos() const {
+		return _startLeftMouseButtonPressedPos;
+	}
+
+	std::vector<sf::IntRect> &Window::GetBoundingRects() {
+		return _boundingRects;
+	}
+
+	bool Window::GetIsLeftMouseButtonPressed() const {
+		return _isLeftMouseButtonPressed;
 	}
 
 	void Window::HandleEvents() {
@@ -81,22 +92,22 @@ namespace se {
 	void Window::Update() {
 		if (_window == nullptr) return;
 
+		_mousePos = ImGui::GetIO().MousePos;
+
+		// Store the starting mouse position when the mouse button is first pressed
+		if (ImGui::IsMouseClicked(0)) {
+			_startLeftMouseButtonPressedPos = ImGui::GetIO().MousePos;
+			_isLeftMouseButtonPressed       = true;
+		} else if (ImGui::IsMouseReleased(0) && _isLeftMouseButtonPressed) {
+			_isLeftMouseButtonPressed = false;
+		}
+
 		ImGui::SFML::Update(*_window, _clock.restart());
 	}
 
 	void Window::Render() {
 		ImGui::PushFont(_imFont);
 		ImGui::DockSpaceOverViewport();
-
-		static ImVec2 viewportSize {500, 500};
-		static ImVec2 viewportPos;
-		sf::IntRect   rect;
-
-		// initialize the viewport render texture
-		sf::RenderTexture rt {};
-		rt.create(viewportSize.x, viewportSize.y);
-		rt.clear(sf::Color(11, 11, 11));
-
 		ImGui::ShowDemoWindow();
 
 		Components::MenuBar(_width);
@@ -104,141 +115,9 @@ namespace se {
 		Components::ContentBrowser();
 		Components::Hierarchy();
 		Components::Properties();
-
-		static ImVec2 startLeftMouseButtonPressedPos;
-		static bool   isLeftMouseButtonPressed = false;
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
-		if (ImGui::Begin("Viewport")) {
-			viewportSize = ImGui::GetWindowSize();
-			viewportPos  = ImGui::GetWindowPos();
-			Application::Get().GetSpriteManager().Render(rt);
-			ImGui::Image(rt);
-
-			// Store the starting mouse position when the mouse button is first
-			// pressed, and the window has focus
-			if (ImGui::IsMouseClicked(0) && ImGui::IsWindowFocused()) {
-				startLeftMouseButtonPressedPos = ImGui::GetIO().MousePos;
-				isLeftMouseButtonPressed       = true;
-			}
-
-			// Calculate the current mouse position and use it to determine the
-			// dimensions of the rectangle
-			if (ImGui::IsMouseDown(0) && isLeftMouseButtonPressed &&
-			    ImGui::IsWindowFocused()) {
-				ImVec2 mouse_pos = ImGui::GetIO().MousePos;
-				float  width  = mouse_pos.x - startLeftMouseButtonPressedPos.x;
-				float  height = mouse_pos.y - startLeftMouseButtonPressedPos.y;
-
-				ImDrawList* draw_list = ImGui::GetWindowDrawList();
-				rect = {static_cast<int>(startLeftMouseButtonPressedPos.x),
-				        static_cast<int>(startLeftMouseButtonPressedPos.y),
-				        static_cast<int>(width),
-				        static_cast<int>(height)};
-
-				// if the end position is less than the start position, swap
-				// them
-				if (width < 0) {
-					rect.left += rect.width;
-					rect.width *= -1;
-				}
-				if (height < 0) {
-					rect.top += rect.height;
-					rect.height *= -1;
-				}
-
-				draw_list->AddRect(
-				    ImVec2(rect.left, rect.top),
-				    ImVec2(rect.left + rect.width, rect.top + rect.height),
-				    IM_COL32(100, 0, 255, 255),
-				    0.0f,
-				    15,
-				    2.0f);
-			}
-
-			// Clear the rectangle when the mouse button is released
-			if (ImGui::IsMouseReleased(0) && isLeftMouseButtonPressed &&
-			    ImGui::IsWindowFocused()) {
-				isLeftMouseButtonPressed = false;
-			}
-
-			if (rect.width > 0 && rect.height > 0) {
-				rect.left -= viewportPos.x;
-				rect.top -= viewportPos.y;
-
-				_boundingRects =
-				    Application::Get().GetSpriteManager().SliceSprite(rect);
-				system("clear");
-				std::cout << "Bounding rects: " << _boundingRects.size()
-				          << std::endl;
-			}
-
-			for (auto& rect : _boundingRects) {
-				sf::RectangleShape shape;
-				shape.setPosition(rect.left + startLeftMouseButtonPressedPos.x -
-				                      viewportPos.x,
-				                  rect.top + startLeftMouseButtonPressedPos.y -
-				                      viewportPos.y);
-				shape.setSize(sf::Vector2f(rect.width, rect.height));
-				shape.setFillColor(sf::Color::Transparent);
-				shape.setOutlineColor(sf::Color::Red);
-				shape.setOutlineThickness(1);
-				rt.draw(shape);
-			}
-		}
-		ImGui::End();
-
-		ImGui::Begin("Bounding rects");
-		{
-			static int selected = -1;
-			for (int i = 0; i < _boundingRects.size(); i++) {
-				char label[128];
-				snprintf(label, IM_ARRAYSIZE(label), "Bounding rect %d", i);
-
-				sf::Sprite sprite =
-				    Application::Get().GetSpriteManager().GetSprite();
-				sprite.setPosition(0, 0);
-				sprite.setTexture(
-				    AssetManager::Get().GetTexture(__DEFAULT_SPRITE__));
-				sprite.setTextureRect(sf::IntRect(
-				    _boundingRects[i].left + startLeftMouseButtonPressedPos.x -
-				        viewportPos.x, // x
-				    _boundingRects[i].top + startLeftMouseButtonPressedPos.y -
-				        viewportPos.y,       // y
-				    _boundingRects[i].width, // width
-				    _boundingRects[i].height // height
-				    ));
-
-				sf::Vector2f size;
-				// the size should make the sprite fit in the image button
-				// 100x100 without being distorted
-				if (sprite.getTextureRect().width >
-				    sprite.getTextureRect().height) {
-					size.x = 100;
-					size.y = sprite.getTextureRect().height *
-					         (100.f / sprite.getTextureRect().width);
-				} else {
-					size.y = 100;
-					size.x = sprite.getTextureRect().width *
-					         (100.f / sprite.getTextureRect().height);
-				}
-
-				if (ImGui::ImageButton(sprite, size)) {
-					// image button was clicked
-				}
-				ImGui::SameLine();
-				ImGui::Text("%s", label);
-			}
-		}
-		ImGui::End();
-
-		auto temp = _boundingRects;
-
-		std::for_each(temp.begin(), temp.end(), [&](sf::IntRect& r) {
-			r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
-			r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
-		});
-
-		Components::AnimationPreview(temp);
+		Components::Viewport();
+		Components::Frames();
+		Components::AnimationPreview();
 
 		ImGui::PopStyleVar();
 		ImGui::PopFont();
@@ -250,69 +129,64 @@ namespace se {
 
 	// Static methods
 	void Window::setFancyImguiStyle() {
-		ImVec4* colors                    = ImGui::GetStyle().Colors;
-		colors[ImGuiCol_Text]             = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
-		colors[ImGuiCol_TextDisabled]     = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
-		colors[ImGuiCol_WindowBg]         = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
-		colors[ImGuiCol_ChildBg]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-		colors[ImGuiCol_PopupBg]          = ImVec4(0.19f, 0.19f, 0.19f, 0.92f);
-		colors[ImGuiCol_Border]           = ImVec4(0.19f, 0.19f, 0.19f, 0.29f);
-		colors[ImGuiCol_BorderShadow]     = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
-		colors[ImGuiCol_FrameBg]          = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
-		colors[ImGuiCol_FrameBgHovered]   = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
-		colors[ImGuiCol_FrameBgActive]    = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
-		colors[ImGuiCol_TitleBg]          = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-		colors[ImGuiCol_TitleBgActive]    = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
-		colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-		colors[ImGuiCol_MenuBarBg]        = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-		colors[ImGuiCol_ScrollbarBg]      = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
-		colors[ImGuiCol_ScrollbarGrab]    = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
-		colors[ImGuiCol_ScrollbarGrabHovered] =
-		    ImVec4(0.40f, 0.40f, 0.40f, 0.54f);
-		colors[ImGuiCol_ScrollbarGrabActive] =
-		    ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
-		colors[ImGuiCol_CheckMark]         = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
-		colors[ImGuiCol_SliderGrab]        = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
-		colors[ImGuiCol_SliderGrabActive]  = ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
-		colors[ImGuiCol_Button]            = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
-		colors[ImGuiCol_ButtonHovered]     = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
-		colors[ImGuiCol_ButtonActive]      = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
-		colors[ImGuiCol_Header]            = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-		colors[ImGuiCol_HeaderHovered]     = ImVec4(0.00f, 0.00f, 0.00f, 0.36f);
-		colors[ImGuiCol_HeaderActive]      = ImVec4(0.20f, 0.22f, 0.23f, 0.33f);
-		colors[ImGuiCol_Separator]         = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
-		colors[ImGuiCol_SeparatorHovered]  = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
-		colors[ImGuiCol_SeparatorActive]   = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
-		colors[ImGuiCol_ResizeGrip]        = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
-		colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
-		colors[ImGuiCol_ResizeGripActive]  = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
-		colors[ImGuiCol_Tab]               = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-		colors[ImGuiCol_TabHovered]        = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-		colors[ImGuiCol_TabActive]         = ImVec4(0.20f, 0.20f, 0.20f, 0.36f);
-		colors[ImGuiCol_TabUnfocused]      = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-		colors[ImGuiCol_TabUnfocusedActive] =
-		    ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
-		colors[ImGuiCol_DockingPreview]   = ImVec4(0.61f, 0.61f, 0.61f, 0.41f);
-		colors[ImGuiCol_DockingEmptyBg]   = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
-		colors[ImGuiCol_PlotLines]        = ImVec4(0.30f, 0.30f, 0.30f, 1.00f);
-		colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
-		colors[ImGuiCol_PlotHistogram]    = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
-		colors[ImGuiCol_PlotHistogramHovered] =
-		    ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-		colors[ImGuiCol_TableHeaderBg]     = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-		colors[ImGuiCol_TableBorderStrong] = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
-		colors[ImGuiCol_TableBorderLight]  = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
-		colors[ImGuiCol_TableRowBg]        = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-		colors[ImGuiCol_TableRowBgAlt]     = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
-		colors[ImGuiCol_TextSelectedBg]    = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
-		colors[ImGuiCol_DragDropTarget]    = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
-		colors[ImGuiCol_NavHighlight]      = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
-		colors[ImGuiCol_NavWindowingHighlight] =
-		    ImVec4(0.35f, 0.35f, 0.35f, 0.70f);
-		colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.36f, 0.36f, 0.36f, 0.20f);
-		colors[ImGuiCol_ModalWindowDimBg]  = ImVec4(0.34f, 0.34f, 0.34f, 0.35f);
+		ImVec4 *colors                         = ImGui::GetStyle().Colors;
+		colors[ImGuiCol_Text]                  = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+		colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+		colors[ImGuiCol_WindowBg]              = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+		colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		colors[ImGuiCol_PopupBg]               = ImVec4(0.19f, 0.19f, 0.19f, 0.92f);
+		colors[ImGuiCol_Border]                = ImVec4(0.19f, 0.19f, 0.19f, 0.29f);
+		colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.24f);
+		colors[ImGuiCol_FrameBg]               = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+		colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
+		colors[ImGuiCol_FrameBgActive]         = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+		colors[ImGuiCol_TitleBg]               = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+		colors[ImGuiCol_TitleBgActive]         = ImVec4(0.06f, 0.06f, 0.06f, 1.00f);
+		colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+		colors[ImGuiCol_MenuBarBg]             = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+		colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+		colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
+		colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.40f, 0.40f, 0.40f, 0.54f);
+		colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
+		colors[ImGuiCol_CheckMark]             = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+		colors[ImGuiCol_SliderGrab]            = ImVec4(0.34f, 0.34f, 0.34f, 0.54f);
+		colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.56f, 0.56f, 0.56f, 0.54f);
+		colors[ImGuiCol_Button]                = ImVec4(0.05f, 0.05f, 0.05f, 0.54f);
+		colors[ImGuiCol_ButtonHovered]         = ImVec4(0.19f, 0.19f, 0.19f, 0.54f);
+		colors[ImGuiCol_ButtonActive]          = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+		colors[ImGuiCol_Header]                = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+		colors[ImGuiCol_HeaderHovered]         = ImVec4(0.00f, 0.00f, 0.00f, 0.36f);
+		colors[ImGuiCol_HeaderActive]          = ImVec4(0.20f, 0.22f, 0.23f, 0.33f);
+		colors[ImGuiCol_Separator]             = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
+		colors[ImGuiCol_SeparatorHovered]      = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
+		colors[ImGuiCol_SeparatorActive]       = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
+		colors[ImGuiCol_ResizeGrip]            = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
+		colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.44f, 0.44f, 0.44f, 0.29f);
+		colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.40f, 0.44f, 0.47f, 1.00f);
+		colors[ImGuiCol_Tab]                   = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+		colors[ImGuiCol_TabHovered]            = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+		colors[ImGuiCol_TabActive]             = ImVec4(0.20f, 0.20f, 0.20f, 0.36f);
+		colors[ImGuiCol_TabUnfocused]          = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+		colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(0.14f, 0.14f, 0.14f, 1.00f);
+		colors[ImGuiCol_DockingPreview]        = ImVec4(0.61f, 0.61f, 0.61f, 0.41f);
+		colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
+		colors[ImGuiCol_PlotLines]             = ImVec4(0.30f, 0.30f, 0.30f, 1.00f);
+		colors[ImGuiCol_PlotLinesHovered]      = ImVec4(0.24f, 0.24f, 0.24f, 1.00f);
+		colors[ImGuiCol_PlotHistogram]         = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
+		colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
+		colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+		colors[ImGuiCol_TableBorderStrong]     = ImVec4(0.00f, 0.00f, 0.00f, 0.52f);
+		colors[ImGuiCol_TableBorderLight]      = ImVec4(0.28f, 0.28f, 0.28f, 0.29f);
+		colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+		colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+		colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.20f, 0.22f, 0.23f, 1.00f);
+		colors[ImGuiCol_DragDropTarget]        = ImVec4(0.33f, 0.67f, 0.86f, 1.00f);
+		colors[ImGuiCol_NavHighlight]          = ImVec4(0.23f, 0.23f, 0.23f, 1.00f);
+		colors[ImGuiCol_NavWindowingHighlight] = ImVec4(0.35f, 0.35f, 0.35f, 0.70f);
+		colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.36f, 0.36f, 0.36f, 0.20f);
+		colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.34f, 0.34f, 0.34f, 0.35f);
 
-		ImGuiStyle& style       = ImGui::GetStyle();
+		ImGuiStyle &style       = ImGui::GetStyle();
 		style.WindowPadding     = ImVec2(8.00f, 8.00f);
 		style.FramePadding      = ImVec2(20.00f, 10.00f);
 		style.CellPadding       = ImVec2(6.00f, 6.00f);
@@ -340,9 +214,6 @@ namespace se {
 	}
 
 	sf::Color Window::ImVec4toSFColor(ImVec4 color) {
-		return sf::Color(color.x * 255,
-		                 color.y * 255,
-		                 color.z * 255,
-		                 color.w * 255);
+		return sf::Color(color.x * 255, color.y * 255, color.z * 255, color.w * 255);
 	}
 } // namespace se

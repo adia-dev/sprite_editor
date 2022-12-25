@@ -5,21 +5,15 @@
 namespace se {
 
 	void Components::MenuBar(uint16_t windowWidth) {
-		ImGuiViewportP* viewport =
-		    (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+		ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
 
-		ImGuiWindowFlags window_flags =
-		    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
-		    ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
+		                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar;
 
 		float height = ImGui::GetFrameHeight();
 
 		// Main menu bar
-		if (ImGui::BeginViewportSideBar("##MainMenuBar",
-		                                viewport,
-		                                ImGuiDir_Up,
-		                                height,
-		                                window_flags)) {
+		if (ImGui::BeginViewportSideBar("##MainMenuBar", viewport, ImGuiDir_Up, height, window_flags)) {
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu("File")) {
 					if (ImGui::MenuItem("New")) {
@@ -40,9 +34,7 @@ namespace se {
 				if (ImGui::BeginMenu("Edit")) {
 					if (ImGui::MenuItem("Undo", "Ctrl+Z")) {
 					}
-					if (ImGui::MenuItem("Redo",
-					                    "Ctrl+Y",
-					                    false,
+					if (ImGui::MenuItem("Redo", "Ctrl+Y", false,
 					                    false)) { // Disabled item
 					}
 					ImGui::Separator();
@@ -59,11 +51,7 @@ namespace se {
 			ImGui::End();
 		}
 
-		if (ImGui::BeginViewportSideBar("##SecondaryMenuBar",
-		                                viewport,
-		                                ImGuiDir_Up,
-		                                height,
-		                                window_flags)) {
+		if (ImGui::BeginViewportSideBar("##SecondaryMenuBar", viewport, ImGuiDir_Up, height, window_flags)) {
 			if (ImGui::BeginMenuBar()) {
 				ImGui::Button("Dev");
 				ImGui::SameLine();
@@ -77,11 +65,7 @@ namespace se {
 			ImGui::End();
 		}
 
-		if (ImGui::BeginViewportSideBar("##MainStatusBar",
-		                                viewport,
-		                                ImGuiDir_Down,
-		                                height,
-		                                window_flags)) {
+		if (ImGui::BeginViewportSideBar("##MainStatusBar", viewport, ImGuiDir_Down, height, window_flags)) {
 			if (ImGui::BeginMenuBar()) {
 				ImGui::Text("Status bar, project name, unsaved changes, etc.");
 				ImGui::EndMenuBar();
@@ -114,8 +98,7 @@ namespace se {
 			                         "Search...",
 			                         searchBuffer,
 			                         IM_ARRAYSIZE(searchBuffer),
-			                         ImGuiInputTextFlags_AutoSelectAll |
-			                             ImGuiInputTextFlags_EnterReturnsTrue);
+			                         ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::SameLine();
 			if (ImGui::Button("x", ImVec2(37, 37))) {
 				searchBuffer[0] = '\0';
@@ -128,8 +111,7 @@ namespace se {
 		                  ImVec2(0, -ImGui::GetFrameHeightWithSpacing()),
 		                  false,
 		                  ImGuiWindowFlags_HorizontalScrollbar);
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing,
-		                    ImVec2(4, 1)); // Tighten spacing
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
 		for (int i = 0; i < logs.size(); i++) {
 			// Clickable text, with action such has right click opens a menu
 			// with copy, etc.
@@ -141,9 +123,7 @@ namespace se {
 				}
 			}
 
-			if (ImGui::Selectable(logs[i].c_str(),
-			                      false,
-			                      ImGuiSelectableFlags_AllowDoubleClick)) {
+			if (ImGui::Selectable(logs[i].c_str(), false, ImGuiSelectableFlags_AllowDoubleClick)) {
 				if (ImGui::IsMouseDoubleClicked(0)) {
 					// Do something on double click
 					std::cout << "Double clicked on: " << logs[i] << std::endl;
@@ -167,8 +147,7 @@ namespace se {
 				ImGui::EndPopup();
 			}
 		}
-		if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-			ImGui::SetScrollHereY(1.0f);
+		if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f);
 
 		ImGui::PopStyleVar();
 		ImGui::EndChild();
@@ -188,24 +167,18 @@ namespace se {
 		const auto& path = Application::Get().GetCurrentDirectory();
 
 		if (std::filesystem::exists(path)) {
-			ImGuiStyle& style = ImGui::GetStyle();
-			float       windowVisible =
-			    ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
-			float lastButtonX = 0;
+			ImGuiStyle& style         = ImGui::GetStyle();
+			float       windowVisible = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+			float       lastButtonX   = 0;
 
 			if (ImGui::Button("..", buttonSizeVec)) {
-				if (path.has_parent_path())
-					Application::Get().SetCurrentDirectory(path.parent_path());
+				if (path.has_parent_path()) Application::Get().SetCurrentDirectory(path.parent_path());
 			}
 
-			for (auto& directoryEntry :
-			     std::filesystem::directory_iterator(path)) {
-				ImGui::PushID(
-				    directoryEntry.path().relative_path().stem().c_str());
+			for (auto& directoryEntry : std::filesystem::directory_iterator(path)) {
+				ImGui::PushID(directoryEntry.path().relative_path().stem().c_str());
 
-				if (lastButtonX + style.ItemSpacing.x + buttonSize <
-				    windowVisible)
-					ImGui::SameLine();
+				if (lastButtonX + style.ItemSpacing.x + buttonSize < windowVisible) ImGui::SameLine();
 
 				if (directoryEntry.is_directory()) {
 					// if (ImGui::ImageButton(AssetManager::Get().GetTexture(
@@ -215,29 +188,17 @@ namespace se {
 					// 	Application::Get().SetCurrentDirectory(
 					// 	    directoryEntry.path());
 					// }
-					ImGui::PushStyleColor(ImGuiCol_Button,
-					                      (ImVec4)ImColor(125, 125, 77, 125));
-					if (ImGui::Button(directoryEntry.path()
-					                      .relative_path()
-					                      .stem()
-					                      .c_str(),
-					                  buttonSizeVec))
-						Application::Get().SetCurrentDirectory(
-						    directoryEntry.path());
+					ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor(125, 125, 77, 125));
+					if (ImGui::Button(directoryEntry.path().relative_path().stem().c_str(), buttonSizeVec))
+						Application::Get().SetCurrentDirectory(directoryEntry.path());
 					ImGui::PopStyleColor(1);
-				} else if (directoryEntry.path().extension().string().find(
-				               ".png") != std::string::npos) {
-					if (ImGui::ImageButton(
-					        AssetManager::Get().GetTexture(
-					            directoryEntry.path().c_str()),
-					        sf::Vector2f(buttonSize, buttonSize))) {
-						Application::Get().GetSpriteManager().LoadSprite(
-						    directoryEntry.path().c_str());
+				} else if (directoryEntry.path().extension().string().find(".png") != std::string::npos) {
+					if (ImGui::ImageButton(AssetManager::Get().GetTexture(directoryEntry.path().c_str()),
+					                       sf::Vector2f(buttonSize, buttonSize))) {
+						Application::Get().GetSpriteManager().LoadSprite(directoryEntry.path().c_str());
 					}
 				} else {
-					ImGui::Button(
-					    directoryEntry.path().relative_path().stem().c_str(),
-					    buttonSizeVec);
+					ImGui::Button(directoryEntry.path().relative_path().stem().c_str(), buttonSizeVec);
 				}
 				lastButtonX = ImGui::GetItemRectMax().x;
 
@@ -251,13 +212,20 @@ namespace se {
 	void Components::Hierarchy() {
 		ImGui::Begin("Hierarchy");
 
-		if (ImGui::TreeNode("Circle1")) {
-			HelpMarker("The same contents can be accessed in 'Tools->Style "
-			           "Editor' or by calling "
-			           "the ShowStyleEditor() function.");
-			ImGui::ShowStyleEditor();
-			ImGui::TreePop();
-			ImGui::Separator();
+		auto& frames = Application::Get().GetSpriteManager().GetFrames();
+
+		for (int i = 0; i < frames.size(); ++i) {
+			ImGui::PushID(i);
+			char label[256];
+			snprintf(label, IM_ARRAYSIZE(label), "Frame %d", i);
+			if (ImGui::TreeNode(label)) {
+				HelpMarker("The same contents can be accessed in 'Tools->Style "
+				           "Editor' or by calling "
+				           "the ShowStyleEditor() function.");
+				ImGui::TreePop();
+				ImGui::Separator();
+			}
+			ImGui::PopID();
 		}
 
 		ImGui::End();
@@ -266,52 +234,190 @@ namespace se {
 	void Components::Properties() {
 		ImGui::Begin("Properties");
 
-		static ImVec2      position {0, 0};
-		static float       scale = 1.f;
-		static sf::Sprite& sprite =
-		    Application::Get().GetSpriteManager().GetSprite();
+		int currentFrameIndex = Application::Get().GetSpriteManager().GetCurrentFrameIndex();
 
-		if (ImGui::TreeNode("Goku")) {
-			HelpMarker("The same contents can be accessed in 'Tools->Style "
-			           "Editor' or by calling "
-			           "the ShowStyleEditor() function.");
+		if (currentFrameIndex != -1) {
+			sf::IntRect currentFrame = Application::Get().GetSpriteManager().GetCurrentFrame();
 
-			if (ImGui::SliderFloat2("Position",
-			                        (float*)&position,
-			                        -1000,
-			                        1000)) {
-				sprite.setPosition(position.x, position.y);
+			std::cout << "Current frame rect: " << currentFrame.left << ", " << currentFrame.top << ", "
+			          << currentFrame.width << ", " << currentFrame.height << std::endl;
+
+			if (currentFrame.width != -1) {
+				char label[256];
+				snprintf(label, IM_ARRAYSIZE(label), "Frame %d", currentFrameIndex);
+				ImGui::Text("%s", label);
+
+				float frameRect[4] = {static_cast<float>(currentFrame.left),
+				                      static_cast<float>(currentFrame.top),
+				                      static_cast<float>(currentFrame.width),
+				                      static_cast<float>(currentFrame.height)};
+
+				if (ImGui::SliderFloat4("slider float4", frameRect, 0.0f, 1000.0f)) {
+					currentFrame.left   = frameRect[0];
+					currentFrame.top    = frameRect[1];
+					currentFrame.width  = frameRect[2];
+					currentFrame.height = frameRect[3];
+
+					Application::Get().GetSpriteManager().SetCurrentFrame(currentFrame);
+				}
 			}
-
-			if (ImGui::SliderFloat("Scale", &scale, 1, 10)) {
-				sprite.setScale(scale, scale);
-			}
-
-			ImGui::TreePop();
-			ImGui::Separator();
 		}
 
 		ImGui::End();
 	}
 
-	void Components::AnimationPreview(const std::vector<sf::IntRect>& frames) {
+	void Components::AnimationPreview() {
 		ImGui::Begin("Animation Preview");
+
+		const auto&  frames = Application::Get().GetSpriteManager().GetFrames();
+		static float timer  = 0.f;
+		static float speed  = 1.f;
+		static float delay  = 0.1f;
+		timer += speed * ImGui::GetIO().DeltaTime;
+
+		ImGui::SliderFloat("Speed", &speed, 0.1f, 10.f);
+		ImGui::SliderFloat("Delay", &delay, 0.1f, 10.f);
 
 		ImVec2     animationPreviewSize = ImGui::GetWindowSize();
 		static int index                = 0;
 
 		if (frames.size() > 0) {
+			if (timer > delay) {
+				index = (index + 1) % frames.size();
+				timer = 0.f;
+			}
+
 			sf::Sprite s(AssetManager::Get().GetTexture(__DEFAULT_SPRITE__));
-
-			index = (index + 1) % frames.size();
-
 			s.setTextureRect(frames[index]);
-
-			ImGui::Image(
-			    s,
-			    sf::Vector2f(animationPreviewSize.x, animationPreviewSize.y));
+			ImGui::Image(s, sf::Vector2f(animationPreviewSize.x, animationPreviewSize.y));
 		}
 
+		ImGui::End();
+	}
+
+	void Components::Viewport() {
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+		if (ImGui::Begin("Viewport")) {
+			ImVec2 viewportSize                   = ImGui::GetWindowSize();
+			ImVec2 viewportPos                    = ImGui::GetWindowPos();
+			auto&  boundingRects                  = Application::Get().GetWindow().GetBoundingRects();
+			auto&  mousePos                       = Application::Get().GetWindow().GetMousePos();
+			auto&  startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
+			bool   isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
+
+			// initialize the viewport render texture
+			sf::IntRect              rect;
+			static sf::RenderTexture rt {};
+			rt.create(viewportSize.x, viewportSize.y);
+			rt.clear(sf::Color(11, 11, 11));
+
+			Application::Get().GetSpriteManager().Render(rt);
+			ImGui::Image(rt);
+
+			// Calculate the current mouse position and use it to determine the dimensions of the rectangle
+			if (ImGui::IsMouseDown(0) && isLeftMouseButtonPressed && ImGui::IsWindowFocused()) {
+				float width  = mousePos.x - startLeftMouseButtonPressedPos.x;
+				float height = mousePos.y - startLeftMouseButtonPressedPos.y;
+
+				ImDrawList* draw_list = ImGui::GetWindowDrawList();
+				rect                  = sf::IntRect(static_cast<int>(startLeftMouseButtonPressedPos.x),
+                                   static_cast<int>(startLeftMouseButtonPressedPos.y),
+                                   static_cast<int>(width),
+                                   static_cast<int>(height));
+
+				// if the end position is less than the start position, swap them
+				if (width < 0) {
+					rect.left += rect.width;
+					rect.width *= -1;
+				}
+				if (height < 0) {
+					rect.top += rect.height;
+					rect.height *= -1;
+				}
+
+				draw_list->AddRect(ImVec2(rect.left, rect.top),
+				                   ImVec2(rect.left + rect.width, rect.top + rect.height),
+				                   IM_COL32(100, 0, 255, 255),
+				                   0.0f,
+				                   15,
+				                   2.0f);
+			}
+
+			if (ImGui::IsWindowFocused() && rect.left > 0 && rect.left < viewportSize.x && rect.top > 0 &&
+			    rect.top < viewportSize.y && rect.width > 0 && rect.height > 0 &&
+			    rect.left + rect.width < viewportSize.x && rect.top + rect.height < viewportSize.y &&
+			    rect.left + rect.width > 0 && rect.top + rect.height > 0) {
+				rect.left -= viewportPos.x;
+				rect.top -= viewportPos.y;
+
+				boundingRects = Application::Get().GetSpriteManager().SliceSprite(rect);
+				std::for_each(boundingRects.begin(), boundingRects.end(), [&](sf::IntRect& r) {
+					r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
+					r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
+				});
+			}
+
+			for (auto& rect : boundingRects) {
+				sf::RectangleShape shape;
+				shape.setPosition(rect.left, rect.top);
+				shape.setSize(sf::Vector2f(rect.width, rect.height));
+				shape.setFillColor(sf::Color::Transparent);
+				shape.setOutlineColor(sf::Color::Red);
+				shape.setOutlineThickness(1);
+				rt.draw(shape);
+			}
+
+			Application::Get().GetSpriteManager().SetFrames(boundingRects);
+		}
+		ImGui::End();
+	}
+
+	void Components::Frames() {
+		ImGui::Begin("Frames");
+		{
+			static int selected                  = -1;
+			ImVec2     viewportSize              = ImGui::GetWindowSize();
+			ImVec2     viewportPos               = ImGui::GetWindowPos();
+			auto&      boundingRects             = Application::Get().GetWindow().GetBoundingRects();
+			auto&      mousePos                  = Application::Get().GetWindow().GetMousePos();
+			auto& startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
+			bool  isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
+
+			for (int i = 0; i < boundingRects.size(); i++) {
+				ImGui::PushID(i);
+				char label[128];
+				snprintf(label, IM_ARRAYSIZE(label), "Frame %d", i);
+
+				sf::Sprite sprite = Application::Get().GetSpriteManager().GetSprite();
+				sprite.setPosition(0, 0);
+				sprite.setTexture(AssetManager::Get().GetTexture(__DEFAULT_SPRITE__));
+				sprite.setTextureRect(sf::IntRect(boundingRects[i].left,  // x
+				                                  boundingRects[i].top,   // y
+				                                  boundingRects[i].width, // width
+				                                  boundingRects[i].height // height
+				                                  ));
+
+				sf::Vector2f size;
+				// the size should make the sprite fit in the image button
+				// 100x100 without being distorted
+				if (sprite.getTextureRect().width > sprite.getTextureRect().height) {
+					size.x = 100;
+					size.y = sprite.getTextureRect().height * (100.f / sprite.getTextureRect().width);
+				} else {
+					size.y = 100;
+					size.x = sprite.getTextureRect().width * (100.f / sprite.getTextureRect().height);
+				}
+
+				if (ImGui::ImageButton(sprite, size)) {
+					Application::Get().GetSpriteManager().SetCurrentFrameIndex(i);
+					std::cout << "Clicked on: " << i << std::endl;
+				}
+
+				ImGui::SameLine();
+				ImGui::Text("%s", label);
+				ImGui::PopID();
+			}
+		}
 		ImGui::End();
 	}
 

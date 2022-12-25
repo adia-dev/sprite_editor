@@ -41,4 +41,8 @@ namespace se {
 		return _spriteManager;
 	}
 
+	Window& Application::GetWindow() {
+		return *_window.get();
+	}
+
 } // namespace se
