@@ -329,6 +329,9 @@ namespace se {
 			auto&  mousePos                       = Application::Get().GetWindow().GetMousePos();
 			auto&  startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
 			bool   isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
+			sf::Vector2f viewPortMousePos =
+			    sf::Vector2f(mousePos.x - viewportPos.x,
+			                 mousePos.y - viewportPos.y - ImGui::GetFrameHeightWithSpacing());
 
 			// initialize the viewport render texture
 			sf::IntRect              rect;
@@ -367,6 +370,7 @@ namespace se {
 				                   15,
 				                   2.0f);
 			}
+			rect.height -= ImGui::GetFrameHeight();
 
 			if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.left > 0 && rect.left < viewportSize.x &&
 			    rect.top > 0 && rect.top < viewportSize.y && rect.width > 0 && rect.height > 0 &&
@@ -395,6 +399,8 @@ namespace se {
 					shape.setOutlineColor(sf::Color::Green);
 				else
 					shape.setOutlineColor(sf::Color::Red);
+
+				if (shape.getGlobalBounds().contains(viewPortMousePos)) shape.setOutlineColor(sf::Color::Blue);
 
 				shape.setOutlineThickness(1);
 				rt.draw(shape);
@@ -440,7 +446,6 @@ namespace se {
 
 				if (ImGui::ImageButton(sprite, size)) {
 					Application::Get().GetSpriteManager().SetCurrentFrameIndex(i);
-					std::cout << "Clicked on: " << i << std::endl;
 				}
 
 				ImGui::SameLine();
