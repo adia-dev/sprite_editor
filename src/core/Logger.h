@@ -68,6 +68,9 @@ namespace se {
 		void Error(const std::string& message, const std::string& file = "", int line = 0);
 		void Fatal(const std::string& message, const std::string& file = "", int line = 0);
 
+		void Delete(int index);
+		void Clear();
+
 		std::vector<Log>& GetLogs();
 
 		static ImColor GetColor(LogLevel level);

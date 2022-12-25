@@ -84,8 +84,7 @@ namespace se {
 			ImGui::BeginChild("Buttons", ImVec2(0, 50));
 			ImGui::SameLine();
 			if (ImGui::Button("Clear")) {
-				// Clear the log
-				std::cout << "Clearing the log" << std::endl;
+				Logger::Get().Clear();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Save")) {
@@ -144,14 +143,15 @@ namespace se {
 				if (ImGui::Selectable("Copy")) {
 					// Copy to clipboard
 					std::cout << "Copied: " << logs[i].message << std::endl;
+					ImGui::LogToClipboard();
+					ImGui::LogText("%s", logs[i].message.c_str());
+					ImGui::LogFinish();
 				}
 				if (ImGui::Selectable("Delete")) {
-					// Delete from logs
-					std::cout << "Deleted: " << logs[i].message << std::endl;
+					Logger::Get().Delete(i);
 				}
 				if (ImGui::Selectable("Clear")) {
-					// Clear the log
-					std::cout << "Clearing the log" << std::endl;
+					Logger::Get().Clear();
 				}
 				ImGui::EndPopup();
 			}

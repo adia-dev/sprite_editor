@@ -27,6 +27,17 @@ namespace se {
 	void Logger::Fatal(const std::string& message, const std::string& file, int line) {
 		_logs.push_back(Log(LogLevel::Fatal, message, file, line, Application::Get().Now()));
 	}
+
+	void Logger::Delete(int index) {
+		if (index < 0 || index >= _logs.size()) return;
+
+		_logs.erase(_logs.begin() + index);
+	}
+
+	void Logger::Clear() {
+		if (_logs.size() > 0) _logs.clear();
+	}
+
 	std::vector<Log>& Logger::GetLogs() {
 		return _logs;
 	}
