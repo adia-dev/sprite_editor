@@ -235,7 +235,8 @@ namespace se {
 
 		std::cout << "Deleting frame: " << index << std::endl;
 
-		_frames.erase(_frames.begin(), _frames.begin() + index);
+		_frames.erase(_frames.begin() + index);
+		_currentFrameIndex = _frames.size() ? 0 : -1;
 	}
 
 	void SpriteManager::AddFrame(const sf::IntRect& frame, int index) {}
