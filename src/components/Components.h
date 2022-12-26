@@ -29,9 +29,16 @@ namespace se {
 		static void AnimationPreview();
 		static void Viewport();
 		static void Frames();
+		static void ShaderEditor();
+		static void ShaderProperties();
+
+		static void RenderDashedRectangle(sf::RenderTarget  &target,
+		                                  sf::Shader        &shader,
+		                                  const sf::IntRect &rect,
+		                                  const sf::Color   &color = sf::Color::White);
 
 	  private:
-		static void HelpMarker(const char* desc);
+		static void HelpMarker(const char *desc);
 	};
 
 } // namespace se
