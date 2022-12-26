@@ -43,6 +43,15 @@ namespace se {
 			return -1;
 		}
 
+		if (!_shader.loadFromFile("../src/shaders/dashed_rectangle.frag", sf::Shader::Fragment)) {
+			std::cerr << "Could not load the shader.\n";
+			return -1;
+		}
+
+		_shader.setUniform("u_resolution", sf::Vector2f(640.0f, 480.0f));
+		_shader.setUniform("u_borderWidth", 0.05f);
+		_shader.setUniform("u_dashLength", 0.01f);
+
 		return 1;
 	}
 
@@ -114,6 +123,8 @@ namespace se {
 		Components::Viewport();
 		Components::Frames();
 		Components::AnimationPreview();
+		Components::ShaderEditor();
+		Components::ShaderProperties();
 
 		ImGui::PopStyleVar();
 		ImGui::PopFont();
