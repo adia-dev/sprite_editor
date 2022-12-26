@@ -320,7 +320,12 @@ namespace se {
 
 			sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
 			s.setTextureRect(frames[index]);
-			ImGui::Image(s, animationPreviewSize);
+			float scale = std::min(animationPreviewSize.x / s.getTextureRect().width,
+			                       animationPreviewSize.y / s.getTextureRect().height);
+			s.setScale(scale, scale);
+			s.setOrigin(s.getTextureRect().width / 2.f, s.getTextureRect().height / 2.f);
+
+			ImGui::Image(s);
 		}
 
 		ImGui::End();
