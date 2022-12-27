@@ -320,7 +320,12 @@ namespace se {
 
 			sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
 			s.setTextureRect(frames[index]);
-			ImGui::Image(s, animationPreviewSize);
+			float scale = std::min(animationPreviewSize.x / s.getTextureRect().width,
+			                       animationPreviewSize.y / s.getTextureRect().height);
+			s.setScale(scale, scale);
+			s.setOrigin(s.getTextureRect().width / 2.f, s.getTextureRect().height / 2.f);
+
+			ImGui::Image(s);
 		}
 
 		ImGui::End();
@@ -396,25 +401,47 @@ namespace se {
 			Application::Get().GetSpriteManager().SetFrames(frames);
 
 			for (int i = 0; i < frames.size(); i++) {
-				auto               rect = frames[i];
+				ImGui::PushID(i);
+				auto      rect  = frames[i];
+				sf::Color color = sf::Color::White;
+
+				if (i == Application::Get().GetSpriteManager().GetCurrentFrameIndex())
+					color = sf::Color::Blue;
+				else
+					color = sf::Color::Yellow;
+
+				if (rect.contains(sf::Vector2i(viewPortMousePos))) {
+					if (isLeftMouseButtonPressed) Application::Get().GetSpriteManager().SetCurrentFrameIndex(i);
+					color = sf::Color::Green;
+				}
+
 				sf::RectangleShape shape;
 				shape.setPosition(rect.left, rect.top);
 				shape.setSize(sf::Vector2f(rect.width, rect.height));
 				shape.setFillColor(sf::Color::Transparent);
 
-				if (i == Application::Get().GetSpriteManager().GetCurrentFrameIndex())
-					shape.setOutlineColor(sf::Color::Green);
-				else
-					shape.setOutlineColor(sf::Color::Red);
-
 				if (shape.getGlobalBounds().contains(viewPortMousePos)) {
-					if (isLeftMouseButtonPressed) Application::Get().GetSpriteManager().SetCurrentFrameIndex(i);
-					shape.setOutlineColor(sf::Color::Blue);
-					shape.setFillColor(sf::Color(155, 255, 155, 50));
+					if (isLeftMouseButtonPressed) {
+						Application::Get().GetSpriteManager().SetCurrentFrameIndex(i);
+						shape.setFillColor(sf::Color(255, 255, 255, 100));
+					} else if (ImGui::IsMouseDown(1)) {
+						shape.setFillColor(sf::Color(255, 0, 0, 100));
+
+						Application::Get().GetSpriteManager().DeleteFrame(i);
+						// open the popup menu in the front
+						// ImGui::OpenPopup("item context menu");
+						// if (ImGui::BeginPopupContextItem("item context menu")) {
+						// 	if (ImGui::MenuItem("Delete")) {
+						// 		Application::Get().GetSpriteManager().DeleteFrame(i);
+						// 	}
+						// 	ImGui::EndPopup();
+						// }
+					}
 				}
 
-				shape.setOutlineThickness(1);
+				RenderDashedRectangle(rt, Application::Get().GetWindow().GetShader(), rect, color);
 				rt.draw(shape);
+				ImGui::PopID();
 			}
 		}
 		ImGui::End();
@@ -465,6 +492,120 @@ namespace se {
 			}
 		}
 		ImGui::End();
+	}
+
+	void Components::ShaderEditor() {
+		ImGui::Begin("Shader Editor");
+
+		std::string shaderCode = R"(
+		#ifdef GL_ES
+		precision mediump float;
+		#endif
+
+		uniform vec2  u_resolution;
+		uniform vec2  u_rectPos;     // position of the rectangle
+		uniform vec2  u_rectSize;    // size of the rectangle
+		uniform float u_borderWidth; // width of the border in screen space
+		uniform float u_dashLength;  // length of each dash in the border
+
+		float rectShape(vec2 st, vec2 center, vec2 size) {
+			vec2 d = abs(st - center) - size;
+			return vec2(step(d.x, 0.0), step(d.y, 0.0)).x * vec2(step(d.x, 0.0), step(d.y, 0.0)).y;
+		}
+
+		float border(vec2 st, vec2 center, vec2 size, float borderWidth, float dashLength) {
+			vec2  d    = abs(st - center) - size;
+			float dist = length(max(d, vec2(0.0)));
+			float dash = mod(dist, dashLength * 2.0);
+			return step(borderWidth, dist) * step(dashLength, dash);
+		}
+
+		void main() {
+			vec2 st    = gl_FragCoord.xy / u_resolution;
+			vec4 color = vec4(0.0);
+
+			// draw the rectangle
+			float rect = rectShape(st, u_rectPos, u_rectSize);
+			color      = mix(color, vec4(1.0), rect);
+
+			// draw the border
+			float border = border(st, u_rectPos, u_rectSize, u_borderWidth, u_dashLength);
+			color        = mix(color, vec4(1.0), border);
+
+			gl_FragColor = color;
+		}
+		)";
+
+		static char shaderText[4096];
+		std::strcpy(shaderText, shaderCode.c_str());
+
+		if (ImGui::InputTextMultiline("##Shader",
+		                              shaderText,
+		                              IM_ARRAYSIZE(shaderText),
+		                              // take the whole window
+		                              ImVec2(-FLT_MIN, -FLT_MIN),
+		                              ImGuiInputTextFlags_AllowTabInput)) {
+			Application::Get().GetWindow().GetShader().loadFromMemory(shaderText, sf::Shader::Fragment);
+		}
+
+		ImGui::End();
+	}
+
+	void Components::ShaderProperties() {
+		ImGui::Begin("Shader Properties");
+		sf::Shader& shader = Application::Get().GetWindow().GetShader();
+		if (!shader.isAvailable()) {
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Shader is not available");
+			ImGui::End();
+			return;
+		}
+
+		static float   lineWidth  = 0.01f;
+		static float   dashLength = 0.01f;
+		static ImColor color      = ImColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+		ImGui::DragFloat("Border Width", &lineWidth, 0.001f, 0.01f, 1.0f);
+		ImGui::DragFloat("Dash Length", &dashLength, 0.001f, 0.01f, 1.0f);
+		ImGui::ColorEdit4("Color", (float*)&color);
+
+		ImGui::End();
+
+		shader.setUniform("u_borderWidth", lineWidth);
+		shader.setUniform("u_dashLength", dashLength);
+		shader.setUniform("u_color", sf::Glsl::Vec4(color.Value.x, color.Value.y, color.Value.z, color.Value.w));
+	}
+
+	void Components::RenderDashedRectangle(sf::RenderTarget&  target,
+	                                       sf::Shader&        shader,
+	                                       const sf::IntRect& rect,
+	                                       const sf::Color&   color) {
+		sf::VertexArray lines[4];
+		for (int i = 0; i < 4; i++) {
+			lines[i].setPrimitiveType(sf::Lines);
+			lines[i].resize(2);
+			for (int j = 0; j < 2; j++) {
+				lines[i][j].color = color;
+			}
+		}
+
+		lines[0][0].position = sf::Vector2f(rect.left, rect.top);
+		lines[0][1].position = sf::Vector2f(rect.left, rect.top + rect.height);
+
+		lines[1][0].position = sf::Vector2f(rect.left, rect.top + rect.height);
+		lines[1][1].position = sf::Vector2f(rect.left + rect.width, rect.top + rect.height);
+
+		lines[2][0].position = sf::Vector2f(rect.left + rect.width, rect.top + rect.height);
+		lines[2][1].position = sf::Vector2f(rect.left + rect.width, rect.top);
+
+		lines[3][0].position = sf::Vector2f(rect.left + rect.width, rect.top);
+		lines[3][1].position = sf::Vector2f(rect.left, rect.top);
+
+		Application::Get().GetWindow().GetShader().setUniform("u_color",
+		                                                      sf::Glsl::Vec4(color.r, color.g, color.b, color.a));
+
+		for (int i = 0; i < 4; i++) {
+			target.draw(lines[i], &shader);
+		}
 	}
 
 	void Components::HelpMarker(const char* desc) {

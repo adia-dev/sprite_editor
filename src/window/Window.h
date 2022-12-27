@@ -22,6 +22,7 @@ namespace se {
 		const ImVec2& GetMousePos() const;
 		const ImVec2& GetStartLeftMouseButtonPressedPos() const;
 		bool          GetIsLeftMouseButtonPressed() const;
+		sf::Shader&   GetShader() { return _shader; }
 
 	  private:
 		uint16_t _width  = 2560;
@@ -31,6 +32,7 @@ namespace se {
 		sf::RenderWindow* _window = nullptr;
 		sf::RenderTexture _renderTexture;
 		sf::Clock         _clock;
+		sf::Shader        _shader;
 
 		// ImGui variables
 		ImFont*  _imFont = nullptr;

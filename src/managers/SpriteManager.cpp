@@ -233,7 +233,7 @@ namespace se {
 	void SpriteManager::DeleteFrame(int index) {
 		if (index < 0 || index >= _frames.size()) return;
 
-		std::cout << "Deleting frame: " << index << std::endl;
+		Logger::Get().Warn("Deleted frame at index " + std::to_string(index));
 
 		_frames.erase(_frames.begin() + index);
 		_currentFrameIndex = _frames.size() ? 0 : -1;
