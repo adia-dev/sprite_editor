@@ -16,6 +16,8 @@ namespace se {
 		}
 
 		sf::Texture& GetTexture(const std::string& name);
+		bool         HasTexture(const std::string& name);
+		bool         LoadTexture(const std::string& name);
 
 	  private:
 		AssetManager() {}
