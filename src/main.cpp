@@ -9,9 +9,10 @@ sf::Vector2f lerp(sf::Vector2f a, sf::Vector2f b, float f) {
 }
 
 int main(int argc, char** argv) {
-	const char* filePath = "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/"
-	                       "assets/images/spritesheets/goku/1.png";
-	sf::Texture&      t  = se::AssetManager::Get().GetTexture(filePath);
+	const char*  filePath = "../resources/icons/icons_pack_bg.png";
+	sf::Texture& t        = se::AssetManager::Get().GetTexture(filePath);
+	// t.setSmooth(true);
+	// anti-aliasing
 	sf::Sprite        s(t);
 	se::SpriteManager sm(s);
 
@@ -76,7 +77,9 @@ int main(int argc, char** argv) {
 							se::SpriteManager::removeTextureBackground(
 							    removeBackgroundTexture,
 							    mousePos.x,
-							    mousePos.y);
+							    mousePos.y,
+							    sf::Color::Transparent,
+							    0.1f);
 							s.setTexture(removeBackgroundTexture);
 						}
 						// set the start position considering the view
@@ -92,12 +95,12 @@ int main(int argc, char** argv) {
 						      sf::Vector2f(viewPosDelta.x, -viewPosDelta.y);
 
 						if (!sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-							slices =
-							    sm.SliceSprite(removeBackgroundTexture,
-							                   sf::IntRect(start.x,
-							                               start.y,
-							                               end.x - start.x,
-							                               end.y - start.y));
+							slices = se::SpriteManager::SliceSprite(
+							    removeBackgroundTexture,
+							    sf::IntRect(start.x,
+							                start.y,
+							                end.x - start.x,
+							                end.y - start.y));
 						}
 					}
 					break;
@@ -155,32 +158,36 @@ int main(int argc, char** argv) {
 			end = sf::Vector2f(mousePos);
 		}
 
-		// if we are on a WIN32 system, system("cls") will clear the console
-		// window,
-// else we will use the clear() function
-#ifdef _WIN32
-		system("cls");
-#else
-		std::cout << "\033[2J\033[1;1H";
-#endif
+		// 		// if we are on a WIN32 system, system("cls") will clear the
+		// console
+		// 		// window,
+		// // else we will use the clear() function
+		// #ifdef _WIN32
+		// 		system("cls");
+		// #else
+		// 		std::cout << "\033[2J\033[1;1H";
+		// #endif
 
-		std::cout << "FPS: " << 1.f / elapsedTime.asSeconds() << std::endl;
-		std::cout << "Zoom: " << currentZoom << std::endl;
-		std::cout << "Mouse Position: " << mousePos.x << ", " << mousePos.y
-		          << std::endl;
-		std::cout << "Mouse Position (View): " << mousePos.x - viewPosDelta.x
-		          << ", " << mousePos.y + viewPosDelta.y << std::endl;
-		std::cout << "View Position Start: " << viewPosStart.x << ", "
-		          << viewPosStart.y << std::endl;
-		std::cout << "View Position: " << viewPos.x << ", " << viewPos.y
-		          << std::endl;
-		std::cout << "View Position Delta: " << viewPosDelta.x << ", "
-		          << viewPosDelta.y << std::endl;
-		std::cout << "View Size: " << view.getSize().x << ", "
-		          << view.getSize().y << std::endl;
-		std::cout << "Start: " << start.x << ", " << start.y << std::endl;
-		std::cout << "End: " << end.x << ", " << end.y << std::endl;
-		std::cout << "Slices: " << slices.size() << std::endl;
+		// 		std::cout << "FPS: " << 1.f / elapsedTime.asSeconds() <<
+		// std::endl; 		std::cout << "Zoom: " << currentZoom << std::endl;
+		// 		std::cout << "Mouse Position: " << mousePos.x << ", " <<
+		// mousePos.y
+		// 		          << std::endl;
+		// 		std::cout << "Mouse Position (View): " << mousePos.x -
+		// viewPosDelta.x
+		// 		          << ", " << mousePos.y + viewPosDelta.y << std::endl;
+		// 		std::cout << "View Position Start: " << viewPosStart.x << ", "
+		// 		          << viewPosStart.y << std::endl;
+		// 		std::cout << "View Position: " << viewPos.x << ", " << viewPos.y
+		// 		          << std::endl;
+		// 		std::cout << "View Position Delta: " << viewPosDelta.x << ", "
+		// 		          << viewPosDelta.y << std::endl;
+		// 		std::cout << "View Size: " << view.getSize().x << ", "
+		// 		          << view.getSize().y << std::endl;
+		// 		std::cout << "Start: " << start.x << ", " << start.y <<
+		// std::endl; 		std::cout << "End: " << end.x << ", " << end.y <<
+		// std::endl; 		std::cout << "Slices: " << slices.size() <<
+		// std::endl;
 
 		window.clear();
 		window.setView(view);
@@ -189,9 +196,24 @@ int main(int argc, char** argv) {
 
 		if (!isLeftMouseButtonPressed) {
 			for (auto& frame : slices) {
+				std::cout << "Slice: " << start.x + frame.left << ", "
+				          << start.y + frame.top << ", " << frame.width << ", "
+				          << frame.height << std::endl;
 				r.setPosition(start.x + frame.left, start.y + frame.top);
 				r.setSize(sf::Vector2f(frame.width, frame.height));
 
+				window.draw(r);
+			}
+		}
+
+		// width: 200
+		// height: 226 - 114 = 112
+		// 94 / 2 = 47
+		// draw a grid of these dimensions across the screen
+		for (int i = 0; i < 15; i++) {
+			for (int j = 0; j < 11; j++) {
+				r.setPosition(200 * i + 100, 200 * j + 94);
+				r.setSize(sf::Vector2f(200, 200));
 				window.draw(r);
 			}
 		}
