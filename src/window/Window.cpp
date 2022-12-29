@@ -115,7 +115,7 @@ namespace se {
 		ImGui::DockSpaceOverViewport();
 		ImGui::ShowDemoWindow();
 
-		Components::MenuBar(_width);
+		Components::MenuBar();
 		Components::Console();
 		Components::ContentBrowser();
 		Components::Hierarchy();

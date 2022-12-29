@@ -34,7 +34,7 @@ namespace se {
 
 		SpriteManager& GetSpriteManager();
 		Window&        GetWindow();
-		sf::Sprite     GetEditorIcon(const std::string& name);
+		sf::Sprite     GetEditorIcon(const std::string& name, const sf::Vector2f& size = sf::Vector2f(32, 32));
 
 	  private:
 		Application();

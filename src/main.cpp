@@ -9,6 +9,8 @@ sf::Vector2f lerp(sf::Vector2f a, sf::Vector2f b, float f) {
 }
 
 int main(int argc, char** argv) {
+	return se::Application::Get().Run();
+
 	const char*  filePath = "../resources/icons/icons_pack_bg.png";
 	sf::Texture& t        = se::AssetManager::Get().GetTexture(filePath);
 	// t.setSmooth(true);

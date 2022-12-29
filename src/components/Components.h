@@ -20,7 +20,7 @@ namespace se {
 		~Components() {}
 
 		/* Components */
-		static void MenuBar(uint16_t windowWidth);
+		static void MenuBar();
 		static void Console();
 		static void ContentBrowser();
 		static void Hierarchy();

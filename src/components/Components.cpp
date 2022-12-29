@@ -4,13 +4,13 @@
 
 namespace se {
 
-	void Components::MenuBar(uint16_t windowWidth) {
+	void Components::MenuBar() {
 		ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
 
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
-		                                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_MenuBar;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_MenuBar;
 
-		float height = ImGui::GetFrameHeight();
+		const sf::Vector2f iconSize(64.f, 64.f);
+		float              height = ImGui::GetFrameHeight();
 
 		// Main menu bar
 		if (ImGui::BeginViewportSideBar("##MainMenuBar", viewport, ImGuiDir_Up, height, window_flags)) {
@@ -51,17 +51,34 @@ namespace se {
 			ImGui::End();
 		}
 
-		if (ImGui::BeginViewportSideBar("##SecondaryMenuBar", viewport, ImGuiDir_Up, height, window_flags)) {
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, iconSize.y / 2));
+		if (ImGui::BeginViewportSideBar("##SecondaryMenuBar",
+		                                viewport,
+		                                ImGuiDir_Up,
+		                                height + iconSize.y / 2,
+		                                window_flags)) {
 			if (ImGui::BeginMenuBar()) {
-				ImGui::Button("Dev");
+				ImGui::PopStyleVar();
+				ImGui::PushID("editor_icon_pen");
+				if (ImGui::ImageButton(Application::Get().GetEditorIcon("pen"), iconSize)) {
+					std::cout << "pen" << std::endl;
+				}
+				ImGui::PopID();
 				ImGui::SameLine();
-				ImGui::Button("Game");
+				ImGui::PushID("editor_icon_add_rect");
+				if (ImGui::ImageButton(Application::Get().GetEditorIcon("add_rect"), iconSize)) {
+					std::cout << "add_rect" << std::endl;
+				}
+				ImGui::PopID();
 				ImGui::SameLine();
-				ImGui::Button("Scene");
+				ImGui::PushID("editor_icon_magic_wand");
+				if (ImGui::ImageButton(Application::Get().GetEditorIcon("magic_wand"), iconSize)) {
+					std::cout << "magic_wand" << std::endl;
+				}
+				ImGui::PopID();
 
 				ImGui::EndMenuBar();
 			}
-
 			ImGui::End();
 		}
 
