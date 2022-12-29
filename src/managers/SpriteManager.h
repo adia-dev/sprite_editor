@@ -218,6 +218,27 @@ namespace se {
 		void UpdateAnimation(float dt);
 		void RenderAnimation(sf::RenderTarget &target);
 
+		static std::vector<sf::IntRect> SliceSprite(const sf::Texture &texture, const sf::IntRect &roiRect);
+		static std::vector<sf::IntRect> SliceSprite(const std::string &filepath);
+		static std::vector<sf::IntRect> SliceSprite(const std::string &filepath, const sf::IntRect &roiRect);
+
+		static cv::Mat TextureToOpenCVMat(const sf::Texture &texture);
+
+		static void removeTextureBackground(sf::Texture     &texture,
+		                                    uint16_t         x,
+		                                    u_int16_t        y,
+		                                    const sf::Color &newColor  = sf::Color::Transparent,
+		                                    double           threshold = 1.0);
+
+		sf::Texture removeTextureBackground(uint16_t         x,
+		                                    u_int16_t        y,
+		                                    const sf::Color &newColor  = sf::Color::Transparent,
+		                                    double           threshold = 1.0);
+
+		sf::Texture removeTextureBackground(const sf::Vector2i &pixelPosition,
+		                                    const sf::Color    &newColor  = sf::Color::Transparent,
+		                                    double              threshold = 1.0);
+
 	  private:
 		sf::Sprite _sprite;          // The sprite managed by the SpriteManager.
 		sf::Sprite _animationSprite; // The sprite used for rendering the animation.

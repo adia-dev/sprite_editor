@@ -13,6 +13,14 @@ namespace se {
 
 	Application::~Application() {}
 
+	void Application::LoadEditorIcons() {
+		if (!AssetManager::Get().LoadTexture(_editorIconsPath)) {
+		}
+
+		_editorIconsRects["play"] = sf::IntRect(0, 0, 32, 32);
+		_editorIconsRects["stop"] = sf::IntRect(32, 0, 32, 32);
+	}
+
 	int Application::Run() {
 		if (_window == nullptr) return 1;
 
@@ -64,6 +72,15 @@ namespace se {
 
 	Window& Application::GetWindow() {
 		return *_window.get();
+	}
+
+	sf::Sprite Application::GetEditorIcon(const std::string& name) {
+		if (_editorIconsRects.find(name) == _editorIconsRects.end()) return sf::Sprite();
+
+		sf::Sprite sprite;
+		sprite.setTexture(AssetManager::Get().GetTexture(_editorIconsPath));
+		sprite.setTextureRect(_editorIconsRects[name]);
+		return sprite;
 	}
 
 } // namespace se

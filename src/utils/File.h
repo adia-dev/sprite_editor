@@ -41,6 +41,12 @@ namespace se {
 			return c_path;
 		}
 
+		static bool Exists(std::filesystem::path& path,
+		                   bool                   directory = false) {
+			return std::filesystem::exists(path) &&
+			       std::filesystem::is_directory(path) == directory;
+		}
+
 	  private:
 	};
 

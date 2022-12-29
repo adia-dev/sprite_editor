@@ -34,6 +34,7 @@ namespace se {
 
 		SpriteManager& GetSpriteManager();
 		Window&        GetWindow();
+		sf::Sprite     GetEditorIcon(const std::string& name);
 
 	  private:
 		Application();
@@ -44,6 +45,11 @@ namespace se {
 		std::filesystem::path                 _currentDirectory;
 		sf::Clock                             _clock;
 		std::chrono::system_clock::time_point _start = std::chrono::system_clock::now();
+
+		std::unordered_map<std::string, sf::IntRect> _editorIconsRects;
+		std::string                                  _editorIconsPath = "../resources/icons/icons_pack_bg.png";
+
+		void LoadEditorIcons();
 
 	  public:
 		Application(Application const&)            = delete;
