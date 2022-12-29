@@ -21,6 +21,7 @@ namespace se {
 		void SetCurrentDirectory(const std::filesystem::path& path);
 
 		SpriteManager& GetSpriteManager();
+		sf::Sprite     GetEditorIcon(const std::string& name);
 
 	  private:
 		Application();
@@ -29,6 +30,11 @@ namespace se {
 		std::shared_ptr<Window> _window = nullptr;
 		SpriteManager           _spriteManager;
 		std::filesystem::path   _currentDirectory;
+
+		std::unordered_map<std::string, sf::IntRect> _editorIconsRects;
+		std::string _editorIconsPath = "../resources/icons/icons_pack_bg.png";
+
+		void LoadEditorIcons();
 
 	  public:
 		Application(Application const&)            = delete;
