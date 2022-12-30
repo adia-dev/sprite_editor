@@ -319,7 +319,8 @@ namespace se {
 
 		const ImVec2 contentAvail = ImGui::GetContentRegionAvail();
 		sf::Vector2f renderTextureSize(contentAvail.x, contentAvail.y);
-		rt.create(static_cast<unsigned int>(renderTextureSize.x), static_cast<unsigned int>(renderTextureSize.y));
+		rt.create(static_cast<unsigned int>(renderTextureSize.x),
+		          std::max(static_cast<unsigned int>(renderTextureSize.y), 1u));
 		rt.clear(Maths::ImColorToSFMLColor(backgroundColor));
 
 		if (frames.size() > 0) {
@@ -361,7 +362,7 @@ namespace se {
 
 	void Components::Viewport() {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
-		if (ImGui::Begin("Viewport")) {
+		if (ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar)) {
 			ImVec2 viewportSize                   = ImGui::GetWindowSize();
 			ImVec2 viewportPos                    = ImGui::GetWindowPos();
 			auto&  frames                         = Application::Get().GetSpriteManager().GetFrames();
