@@ -2,6 +2,14 @@
 
 #include "core/Logger.h"
 
+#define INTERPOLATE(format, ...)                \
+	({                                          \
+		char buffer[1024];                      \
+		sprintf(buffer, format, ##__VA_ARGS__); \
+		std::string result = buffer;            \
+		result;                                 \
+	})
+
 namespace se {
 
 	class Maths {
