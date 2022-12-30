@@ -331,6 +331,20 @@ namespace se {
 		ImGui::End();
 	}
 
+	void Components::AnimationTimeline() {
+		ImGui::Begin("Animation Timeline");
+
+		const auto& frames = Application::Get().GetSpriteManager().GetFrames();
+
+		// ImGui::BeginGroup();
+		// {
+		// 	ImGui::Image();
+		// }
+		// ImGui::EndGroup();
+
+		ImGui::End();
+	}
+
 	void Components::Viewport() {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
 		if (ImGui::Begin("Viewport")) {
@@ -384,12 +398,30 @@ namespace se {
 			}
 			rect.height -= frameHeight;
 
-			if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.left > 0 && rect.left < viewportSize.x &&
-			    rect.top > 0 && rect.top < viewportSize.y && rect.width > 0 && rect.height > 0 &&
-			    rect.left + rect.width < viewportSize.x && rect.top + rect.height < viewportSize.y &&
+			if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.width > 0 && rect.height > 0 &&
 			    rect.left + rect.width > 0 && rect.top + rect.height > 0) {
 				rect.left -= viewportPos.x;
 				rect.top -= viewportPos.y;
+				rect.left = std::max(rect.left, 0);
+				rect.top  = std::max(rect.top, 0);
+				rect.width =
+				    std::min(rect.width,
+				             (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().width - rect.left);
+				rect.height =
+				    std::min(rect.height,
+				             (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().height - rect.top);
+
+				Logger::Get().Clear();
+				Logger::Get().Info("start: " + std::to_string(rect.left) + ", " + std::to_string(rect.top) + ", " +
+				                   std::to_string(rect.width) + ", " + std::to_string(rect.height));
+				Logger::Get().Info("end: " + std::to_string(rect.left + rect.width) + ", " +
+				                   std::to_string(rect.top + rect.height));
+
+				// if the rectangle is reversed,offset the start position
+				if (rect.width < 0) {
+					rect.left += rect.width;
+					rect.width *= -1;
+				}
 
 				frames = Application::Get().GetSpriteManager().SliceSprite(rect);
 				std::for_each(frames.begin(), frames.end(), [&](sf::IntRect& r) {
@@ -419,6 +451,8 @@ namespace se {
 				shape.setPosition(rect.left, rect.top);
 				shape.setSize(sf::Vector2f(rect.width, rect.height));
 				shape.setFillColor(sf::Color::Transparent);
+				shape.setOutlineColor(color);
+				shape.setOutlineThickness(1.0f);
 
 				if (shape.getGlobalBounds().contains(viewPortMousePos)) {
 					if (isLeftMouseButtonPressed) {
@@ -439,7 +473,7 @@ namespace se {
 					}
 				}
 
-				RenderDashedRectangle(rt, Application::Get().GetWindow().GetShader(), rect, color);
+				// RenderDashedRectangle(rt, Application::Get().GetWindow().GetShader(), rect, color);
 				rt.draw(shape);
 				ImGui::PopID();
 			}
@@ -573,6 +607,58 @@ namespace se {
 		shader.setUniform("u_borderWidth", lineWidth);
 		shader.setUniform("u_dashLength", dashLength);
 		shader.setUniform("u_color", sf::Glsl::Vec4(color.Value.x, color.Value.y, color.Value.z, color.Value.w));
+	}
+
+	void Components::OpenCVProperties() {
+		ImGui::Begin("OpenCV Properties");
+
+		// create appropriate input for this:
+		// cv::Size  MorphologicalKernelSize = {3, 3};
+		// cv::Point MorphologicalAnchor     = {-1, -1};
+		// int       MorphologicalIterations = 1;
+		// int       BoundingRectAreaMin     = 50;
+		// double    TreeThresholdMin        = 0.0;
+		// double    TreeThresholdMax        = 255.0;
+		// Gaussian Blur size, must be odd
+		static int gaussianBlurSize[2]        = {Application::Get().GaussianBlurSize.width,
+		                                         Application::Get().GaussianBlurSize.height};
+		static int morphologicalKernelSize[2] = {Application::Get().MorphologicalKernelSize.width,
+		                                         Application::Get().MorphologicalKernelSize.height};
+		static int morphologicalAnchor[2]     = {Application::Get().MorphologicalAnchor.x,
+		                                         Application::Get().MorphologicalAnchor.y};
+		static int morphologicalIterations    = Application::Get().MorphologicalIterations;
+		static int boundingRectAreaMin        = Application::Get().BoundingRectAreaMin;
+		static int treeThreshold[2] = {Application::Get().TreeThresholdMin, Application::Get().TreeThresholdMax};
+
+		if (ImGui::DragInt2("Gaussian Blur Size", (int*)&gaussianBlurSize, 2, 1, 100)) {
+			Application::Get().GaussianBlurSize.width  = gaussianBlurSize[0];
+			Application::Get().GaussianBlurSize.height = gaussianBlurSize[1];
+		}
+
+		if (ImGui::DragInt2("Morphological Kernel Size", (int*)&morphologicalKernelSize, 2, 1, 100)) {
+			Application::Get().MorphologicalKernelSize.width  = morphologicalKernelSize[0];
+			Application::Get().MorphologicalKernelSize.height = morphologicalKernelSize[1];
+		}
+
+		if (ImGui::DragInt2("Morphological Anchor", (int*)&morphologicalAnchor, 2, -100, 100)) {
+			Application::Get().MorphologicalAnchor.x = morphologicalAnchor[0];
+			Application::Get().MorphologicalAnchor.y = morphologicalAnchor[1];
+		}
+
+		if (ImGui::DragInt("Morphological Iterations", &morphologicalIterations, 1, 1, 100)) {
+			Application::Get().MorphologicalIterations = morphologicalIterations;
+		}
+
+		if (ImGui::DragInt("Bounding Rect Area Min", &boundingRectAreaMin, 1, 1, 10000)) {
+			Application::Get().BoundingRectAreaMin = boundingRectAreaMin;
+		}
+
+		if (ImGui::DragInt2("Tree Threshold", (int*)&treeThreshold, 1, 0, 255)) {
+			Application::Get().TreeThresholdMin = treeThreshold[0];
+			Application::Get().TreeThresholdMax = treeThreshold[1];
+		}
+
+		ImGui::End();
 	}
 
 	void Components::RenderDashedRectangle(sf::RenderTarget&  target,

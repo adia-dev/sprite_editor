@@ -60,3 +60,6 @@ install(TARGETS app)
 
 # Add a compile definition for the app target
 target_compile_definitions(app PUBLIC -DImTextureID=ImU64 -D__CURRENT_DIR__="../" -D__DEFAULT_SPRITE__="../assets/images/spritesheets/vegito/ssj_blue.png")
+
+# remove the narrowing conversion warning
+target_compile_options(app PRIVATE -Wno-narrowing)

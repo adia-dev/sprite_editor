@@ -3,6 +3,8 @@
 //
 #include "SpriteManager.h"
 
+#include "application/Application.h"
+
 namespace se {
 	SpriteManager::SpriteManager() {}
 
@@ -48,25 +50,38 @@ namespace se {
 		// Convert the region of interest matrix to grayscale
 		cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 
-		cv::GaussianBlur(gray, blurred, {3, 3}, 0);
+		cv::GaussianBlur(gray, blurred, Application::Get().GaussianBlurSize, 0);
 
 		// Apply Otsu's threshold to the grayscale matrix to create a black and
 		// white image
-		double thresh = cv::threshold(blurred, bw, 0, 255, cv::THRESH_BINARY);
+		double thresh = cv::threshold(blurred,
+		                              bw,
+		                              Application::Get().TreeThresholdMin,
+		                              Application::Get().TreeThresholdMax,
+		                              cv::THRESH_BINARY);
 
 		// Create a 3x3 rectangular kernel for morphological transformations
-		cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, {3, 3});
+		cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, Application::Get().MorphologicalKernelSize);
 
 		// Apply a closing morphological transformation to the black and white
 		// image
-		morphologyEx(bw, close, cv::MORPH_CLOSE, kernel, {-1, -1}, 2);
+		morphologyEx(bw,
+		             close,
+		             cv::MORPH_CLOSE,
+		             kernel,
+		             Application::Get().MorphologicalAnchor,
+		             Application::Get().MorphologicalIterations);
 
 		// Dilate the closing image
-		dilate(close, dil, kernel, {-1, -1}, 2);
+		dilate(close, dil, kernel, Application::Get().MorphologicalAnchor, Application::Get().MorphologicalIterations);
+		cv::GaussianBlur(dil, blurred, Application::Get().GaussianBlurSize, 0);
 
-		cv::GaussianBlur(dil, blurred, {3, 3}, 0);
-
-		cv::morphologyEx(blurred, blurred, cv::MORPH_CLOSE, kernel, {-1, -1}, 2);
+		cv::morphologyEx(blurred,
+		                 blurred,
+		                 cv::MORPH_CLOSE,
+		                 kernel,
+		                 Application::Get().MorphologicalAnchor,
+		                 Application::Get().MorphologicalIterations);
 
 		// Find the contours in the dilated image
 		std::vector<std::vector<cv::Point>> contours;
@@ -82,7 +97,9 @@ namespace se {
 			double area = contourArea(c);
 
 			// Skip contours with small areas
-			if (area < 120.0) continue;
+			if (area < Application::Get().BoundingRectAreaMin) {
+				continue;
+			}
 
 			// Add the bounding rectangle to the vector of rectangles
 			slices.push_back({bRect.x, bRect.y, bRect.width, bRect.height});

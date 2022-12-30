@@ -36,6 +36,15 @@ namespace se {
 		Window&        GetWindow();
 		sf::Sprite     GetEditorIcon(const std::string& name);
 
+		// temp
+		cv::Size  GaussianBlurSize        = {3, 3};
+		cv::Size  MorphologicalKernelSize = {3, 3};
+		cv::Point MorphologicalAnchor     = {-1, -1};
+		int       MorphologicalIterations = 1;
+		int       BoundingRectAreaMin     = 50;
+		double    TreeThresholdMin        = 0.0;
+		double    TreeThresholdMax        = 255.0;
+
 	  private:
 		Application();
 		~Application();

@@ -27,10 +27,12 @@ namespace se {
 		static void Properties();
 		// static void Inspector();
 		static void AnimationPreview();
+		static void AnimationTimeline();
 		static void Viewport();
 		static void Frames();
 		static void ShaderEditor();
 		static void ShaderProperties();
+		static void OpenCVProperties();
 
 		static void RenderDashedRectangle(sf::RenderTarget  &target,
 		                                  sf::Shader        &shader,

@@ -123,8 +123,10 @@ namespace se {
 		Components::Viewport();
 		Components::Frames();
 		Components::AnimationPreview();
+		Components::AnimationTimeline();
 		Components::ShaderEditor();
 		Components::ShaderProperties();
+		Components::OpenCVProperties();
 
 		ImGui::PopStyleVar();
 		ImGui::PopFont();
