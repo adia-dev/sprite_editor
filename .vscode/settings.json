@@ -109,6 +109,7 @@
     "memory_resource": "cpp",
     "source_location": "cpp",
     "stop_token": "cpp",
-    "codecvt": "cpp"
+    "codecvt": "cpp",
+    "*.ipp": "cpp"
   }
 }
