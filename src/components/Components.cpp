@@ -302,15 +302,25 @@ namespace se {
 	void Components::AnimationPreview() {
 		ImGui::Begin("Animation Preview");
 
-		const auto&  frames = Application::Get().GetSpriteManager().GetFrames();
-		static float timer  = 0.f;
-		static float speed  = 1.f;
+		const auto&              frames = Application::Get().GetSpriteManager().GetFrames();
+		static int               index  = 0;
+		static float             timer  = 0.f;
+		static float             speed  = 1.f;
+		static float             scale  = 1.f;
+		static sf::RenderTexture rt {};
+		static ImColor           backgroundColor = ImColor(255, 255, 255, 255);
+
 		timer += speed * ImGui::GetIO().DeltaTime;
 
 		ImGui::SliderFloat("Speed", &speed, 0.1f, 10.f);
+		ImGui::SliderFloat("Scale", &scale, 0.1f, 10.f);
+		ImGui::SliderInt("Index", &index, 0, frames.size() - 1);
+		ImGui::ColorEdit4("Background Color", (float*)&backgroundColor);
 
-		sf::Vector2f animationPreviewSize(300.f, 300.f);
-		static int   index = 0;
+		const ImVec2 contentAvail = ImGui::GetContentRegionAvail();
+		sf::Vector2f renderTextureSize(contentAvail.x, contentAvail.y);
+		rt.create(static_cast<unsigned int>(renderTextureSize.x), static_cast<unsigned int>(renderTextureSize.y));
+		rt.clear(Maths::ImColorToSFMLColor(backgroundColor));
 
 		if (frames.size() > 0) {
 			if (timer > 0.1f) {
@@ -320,12 +330,16 @@ namespace se {
 
 			sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
 			s.setTextureRect(frames[index]);
-			float scale = std::min(animationPreviewSize.x / s.getTextureRect().width,
-			                       animationPreviewSize.y / s.getTextureRect().height);
 			s.setScale(scale, scale);
 			s.setOrigin(s.getTextureRect().width / 2.f, s.getTextureRect().height / 2.f);
+			s.setPosition(renderTextureSize.x / 2.f, renderTextureSize.y / 2.f);
+			rt.draw(s);
+			ImGui::Image(rt);
 
-			ImGui::Image(s);
+			// if right click, set the current frame to the one we clicked on
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(1)) {
+				Application::Get().GetSpriteManager().SetCurrentFrameIndex(index);
+			}
 		}
 
 		ImGui::End();
