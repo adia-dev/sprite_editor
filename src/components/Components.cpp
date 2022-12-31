@@ -4,7 +4,7 @@
 
 namespace se {
 
-	void Components::MenuBar(uint16_t windowWidth) {
+	void Components::MenuBar() {
 		ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
 
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings |
@@ -46,28 +46,83 @@ namespace se {
 					}
 					ImGui::EndMenu();
 				}
-				ImGui::EndMenuBar();
-			}
-			ImGui::End();
-		}
-
-		if (ImGui::BeginViewportSideBar("##SecondaryMenuBar", viewport, ImGuiDir_Up, height, window_flags)) {
-			if (ImGui::BeginMenuBar()) {
-				if (ImGui::Button(Application::Get().GetWindow().GetShowGrid() ? ICON_FA_RECTANGLE_XMARK
-				                                                               : ICON_FA_SQUARE)) {
-					Application::Get().GetWindow().ToggleShowGrid();
+				if (ImGui::BeginMenu("Render")) {
+					if (ImGui::MenuItem("Render to file")) {
+						Logger::Get().Info("Render to file");
+					}
+					ImGui::EndMenu();
 				}
-				ImGui::SameLine();
-				ImGui::Button("Game");
-				ImGui::SameLine();
-				ImGui::Button("Scene");
-				ImGui::SameLine();
+				// Window
+				if (ImGui::BeginMenu("Window")) {
+					if (ImGui::MenuItem("Console")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Content Browser")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Hierarchy")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Properties")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Animation Preview")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Animation Timeline")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Viewport")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Frames")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Shader Editor")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Shader Properties")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("OpenCV Properties")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					if (ImGui::MenuItem("Toolbox")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					ImGui::EndMenu();
+				}
+
+				// Help
+				if (ImGui::BeginMenu("Help")) {
+					if (ImGui::MenuItem("About")) {
+						Logger::Get().Info("Toggle: XXX");
+					}
+					ImGui::EndMenu();
+				}
 
 				ImGui::EndMenuBar();
 			}
-
 			ImGui::End();
 		}
+
+		// if (ImGui::BeginViewportSideBar("##SecondaryMenuBar", viewport, ImGuiDir_Up, height, window_flags)) {
+		// 	if (ImGui::BeginMenuBar()) {
+		// 		if (ImGui::Button(Application::Get().GetWindow().GetShowGrid() ? ICON_FA_RECTANGLE_XMARK
+		// 		                                                               : ICON_FA_SQUARE)) {
+		// 			Application::Get().GetWindow().ToggleShowGrid();
+		// 		}
+		// 		ImGui::SameLine();
+		// 		ImGui::Button("Game");
+		// 		ImGui::SameLine();
+		// 		ImGui::Button("Scene");
+		// 		ImGui::SameLine();
+
+		// 		ImGui::EndMenuBar();
+		// 	}
+
+		// 	ImGui::End();
+		// }
 
 		if (ImGui::BeginViewportSideBar("##MainStatusBar", viewport, ImGuiDir_Down, height, window_flags)) {
 			if (ImGui::BeginMenuBar()) {
@@ -540,6 +595,32 @@ namespace se {
 					}
 				}
 			}
+
+			// I want to make a menu like on Blender, it is on the left side of the viewport, vertical buttons that you
+			// can click on to select a tool (like move, scale, rotate, etc)
+			// Set the position of the menu to be on the left side of the viewport
+			ImGui::SetCursorPos(ImVec2(viewportPos.x + 25, viewportPos.y + 50));
+			ImGui::BeginChild("ViewportMenu");
+			{
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.65f));
+
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(100, 0));
+				ImGui::Button("Select", ImVec2(100, 100));
+				ImGui::Button("Move", ImVec2(100, 100));
+				ImGui::PopStyleVar();
+
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 50));
+				ImGui::Button("Scale", ImVec2(100, 100));
+				ImGui::Button("Rotate", ImVec2(100, 100));
+				ImGui::PopStyleVar();
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(100, 0));
+				ImGui::Button("Shear", ImVec2(100, 100));
+				ImGui::Button("Mirror", ImVec2(100, 100));
+				ImGui::PopStyleVar();
+
+				ImGui::PopStyleColor();
+			}
+			ImGui::EndChild();
 		}
 		ImGui::End();
 	}
@@ -719,6 +800,32 @@ namespace se {
 		if (ImGui::DragInt2("Tree Threshold", (int*)&treeThreshold, 1, 0, 255)) {
 			Application::Get().TreeThresholdMin = treeThreshold[0];
 			Application::Get().TreeThresholdMax = treeThreshold[1];
+		}
+
+		ImGui::End();
+	}
+
+	void Components::ToolBox() {
+		ImGui::Begin("Toolbox");
+
+		if (ImGui::Button("Select Box")) {
+			Logger::Get().Info("Selected tool: Select box");
+		}
+
+		if (ImGui::Button("Move")) {
+			Logger::Get().Info("Selected tool: Move");
+		}
+
+		if (ImGui::Button("Delete")) {
+			Logger::Get().Info("Selected tool: Delete");
+		}
+
+		if (ImGui::Button("Scale")) {
+			Logger::Get().Info("Selected tool: Scale");
+		}
+
+		if (ImGui::Button("Transform")) {
+			Logger::Get().Info("Selected tool: Transform");
 		}
 
 		ImGui::End();

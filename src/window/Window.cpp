@@ -125,10 +125,10 @@ namespace se {
 		ImGui::DockSpaceOverViewport();
 		ImGui::ShowDemoWindow();
 
-		Components::MenuBar(_width);
+		Components::MenuBar();
 		Components::Console();
 		Components::ContentBrowser();
-		Components::Hierarchy();
+		// Components::Hierarchy();
 		Components::Properties();
 		Components::Viewport();
 		Components::Frames();
@@ -137,6 +137,7 @@ namespace se {
 		Components::ShaderEditor();
 		Components::ShaderProperties();
 		Components::OpenCVProperties();
+		// Components::ToolBox();
 
 		ImGui::PopStyleVar();
 		ImGui::PopFont();

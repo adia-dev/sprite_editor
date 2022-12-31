@@ -21,7 +21,7 @@ namespace se {
 		~Components() {}
 
 		/* Components */
-		static void MenuBar(uint16_t windowWidth);
+		static void MenuBar();
 		static void Console();
 		static void ContentBrowser();
 		static void Hierarchy();
@@ -34,6 +34,7 @@ namespace se {
 		static void ShaderEditor();
 		static void ShaderProperties();
 		static void OpenCVProperties();
+		static void ToolBox();
 
 		static void RenderDashedRectangle(sf::RenderTarget  &target,
 		                                  sf::Shader        &shader,
