@@ -24,6 +24,10 @@ namespace se {
 		bool          GetIsLeftMouseButtonPressed() const;
 		sf::Shader&   GetShader() { return _shader; }
 
+		void ToggleShowGrid() { _showGrid = !_showGrid; }
+		bool GetShowGrid() const { return _showGrid; }
+		void SetShowGrid(bool state) { _showGrid = state; }
+
 	  private:
 		uint16_t _width  = 2560;
 		uint16_t _height = 1600;
@@ -41,6 +45,7 @@ namespace se {
 		ImVec2 _mousePos;
 		ImVec2 _startLeftMouseButtonPressedPos;
 		bool   _isLeftMouseButtonPressed = false;
+		bool   _showGrid                 = true;
 
 		// Init methods
 		int Init();

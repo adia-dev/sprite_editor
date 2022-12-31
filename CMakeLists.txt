@@ -18,8 +18,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Set the ImGui include directory
 set(IMGUI_DIR include/imgui)
 
+# Set the FontAwesome include directory
+set(FA_DIR include/FontAwesome)
+
 # Add the ImGui and src directories to the include path
-include_directories(src/ ${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
+include_directories(src/ ${IMGUI_DIR} ${IMGUI_DIR}/backends ${FA_DIR} ..)
 
 # Add the OpenCV include directory to the include path
 include_directories(${OpenCV_INCLUDE_DIRS})

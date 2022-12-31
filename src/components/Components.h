@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IconsFontAwesome6.h"
 #include "managers/SpriteManager.h"
 
 // #include "../utils/Utils.h"

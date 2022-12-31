@@ -11,7 +11,6 @@
 	})
 
 namespace se {
-
 	class Maths {
 	  public:
 		Maths(/* args */) {}

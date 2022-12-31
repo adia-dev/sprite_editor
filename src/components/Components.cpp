@@ -53,11 +53,15 @@ namespace se {
 
 		if (ImGui::BeginViewportSideBar("##SecondaryMenuBar", viewport, ImGuiDir_Up, height, window_flags)) {
 			if (ImGui::BeginMenuBar()) {
-				ImGui::Button("Dev");
+				if (ImGui::Button(Application::Get().GetWindow().GetShowGrid() ? ICON_FA_RECTANGLE_XMARK
+				                                                               : ICON_FA_SQUARE)) {
+					Application::Get().GetWindow().ToggleShowGrid();
+				}
 				ImGui::SameLine();
 				ImGui::Button("Game");
 				ImGui::SameLine();
 				ImGui::Button("Scene");
+				ImGui::SameLine();
 
 				ImGui::EndMenuBar();
 			}
@@ -308,6 +312,7 @@ namespace se {
 		static float             speed  = 1.f;
 		static float             scale  = 1.f;
 		static sf::RenderTexture rt {};
+		static bool              play            = false;
 		static ImColor           backgroundColor = ImColor(255, 255, 255, 255);
 
 		timer += speed * ImGui::GetIO().DeltaTime;
@@ -317,6 +322,34 @@ namespace se {
 		ImGui::SliderInt("Index", &index, 0, frames.size() - 1);
 		ImGui::ColorEdit4("Background Color", (float*)&backgroundColor);
 
+		{
+			if (ImGui::Button(ICON_FA_BACKWARD)) {
+				index = 0;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_BACKWARD_STEP)) {
+				index = std::max(0, index - 1);
+			}
+			ImGui::SameLine();
+			if (play) {
+				if (ImGui::Button(ICON_FA_PAUSE)) {
+					play = false;
+				}
+			} else {
+				if (ImGui::Button(ICON_FA_PLAY)) {
+					play = true;
+				}
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_FORWARD_STEP)) {
+				index = std::min(static_cast<int>(frames.size() - 1), index + 1);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_FORWARD)) {
+				index = frames.size() - 1;
+			}
+		}
+
 		const ImVec2 contentAvail = ImGui::GetContentRegionAvail();
 		sf::Vector2f renderTextureSize(contentAvail.x, contentAvail.y);
 		rt.create(static_cast<unsigned int>(renderTextureSize.x),
@@ -324,7 +357,7 @@ namespace se {
 		rt.clear(Maths::ImColorToSFMLColor(backgroundColor));
 
 		if (frames.size() > 0) {
-			if (timer > 0.1f) {
+			if (timer > 0.1f && play) {
 				index = (index + 1) % frames.size();
 				timer = 0.f;
 			}
@@ -332,7 +365,7 @@ namespace se {
 			sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
 			s.setTextureRect(frames[index]);
 			s.setScale(scale, scale);
-			s.setOrigin(s.getTextureRect().width / 2.f, s.getTextureRect().height / 2.f);
+			s.setOrigin(s.getTextureRect().width / 2.f, s.getTextureRect().height);
 			s.setPosition(renderTextureSize.x / 2.f, renderTextureSize.y / 2.f);
 			rt.draw(s);
 			ImGui::Image(rt);
@@ -371,11 +404,17 @@ namespace se {
 			auto&  startLeftMouseButtonPressedPos = Application::Get().GetWindow().GetStartLeftMouseButtonPressedPos();
 			bool   isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
 			float  frameHeight                    = ImGui::GetFrameHeight();
+			static ImVec2 gridSize(100, 100);
+
 			sf::Vector2f viewPortMousePos =
 			    sf::Vector2f(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y - frameHeight);
+			sf::IntRect        rect;
+			sf::RectangleShape gridRect(sf::Vector2f(gridSize.x, gridSize.y));
+			gridRect.setFillColor(sf::Color::Transparent);
+			gridRect.setOutlineColor(sf::Color(111, 111, 111, 111));
+			gridRect.setOutlineThickness(1.f);
 
 			// initialize the viewport render texture
-			sf::IntRect              rect;
 			static sf::RenderTexture rt {};
 			rt.create(viewportSize.x, viewportSize.y);
 			rt.clear(sf::Color(11, 11, 11));
@@ -426,13 +465,6 @@ namespace se {
 				    std::min(rect.height,
 				             (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().height - rect.top);
 
-				Logger::Get().Clear();
-				Logger::Get().Info("start: " + std::to_string(rect.left) + ", " + std::to_string(rect.top) + ", " +
-				                   std::to_string(rect.width) + ", " + std::to_string(rect.height));
-				Logger::Get().Info("end: " + std::to_string(rect.left + rect.width) + ", " +
-				                   std::to_string(rect.top + rect.height));
-
-				// if the rectangle is reversed,offset the start position
 				if (rect.width < 0) {
 					rect.left += rect.width;
 					rect.width *= -1;
@@ -442,6 +474,12 @@ namespace se {
 				std::for_each(frames.begin(), frames.end(), [&](sf::IntRect& r) {
 					r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
 					r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
+				});
+
+				// sort the frames by their x position and then by their y position
+				std::sort(frames.begin(), frames.end(), [](sf::IntRect& a, sf::IntRect& b) {
+					if (a.left == b.left) return a.top < b.top;
+					return a.left < b.left;
 				});
 			}
 
@@ -490,7 +528,17 @@ namespace se {
 
 				// RenderDashedRectangle(rt, Application::Get().GetWindow().GetShader(), rect, color);
 				rt.draw(shape);
+
 				ImGui::PopID();
+			}
+
+			if (Application::Get().GetWindow().GetShowGrid()) {
+				for (uint16_t i = 0; i < viewportSize.y / gridSize.y; ++i) {
+					for (uint16_t j = 0; j < viewportSize.x / gridSize.x; ++j) {
+						gridRect.setPosition(j * gridSize.x, i * gridSize.y);
+						rt.draw(gridRect);
+					}
+				}
 			}
 		}
 		ImGui::End();

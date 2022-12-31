@@ -32,7 +32,17 @@ namespace se {
 		_imIO->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		_imIO->FontGlobalScale = 1.25f;
 
-		_imFont = _imIO->Fonts->AddFontFromFileTTF("../assets/fonts/Operator-Mono/Fonts/OperatorMono-Medium.otf", 20);
+		static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_16_FA, 0};
+		ImFontConfig         icons_config;
+		icons_config.MergeMode  = true;
+		icons_config.PixelSnapH = true;
+		_imFont                 = _imIO->Fonts->AddFontFromFileTTF(
+            "/Users/abdoulayedia/Projects/Dev/C++/sprite_editor/assets/fonts/FontAwesome/fa-solid-900.ttf",
+            20.0f,
+            &icons_config,
+            icons_ranges);
+
+		_imIO->Fonts->AddFontFromFileTTF("../assets/fonts/Operator-Mono/Fonts/OperatorMono-Medium.otf", 20.f);
 
 		_imIO->IniFilename = "../src/imgui.ini";
 
