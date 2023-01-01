@@ -593,15 +593,25 @@ namespace se {
 					} break;
 
 					case Tool::Eraser: {
+						sf::CircleShape circle;
+						circle.setRadius(50.f);
+						circle.setOrigin(circle.getRadius(), circle.getRadius());
+						circle.setPosition(viewPortMousePos.x, viewPortMousePos.y);
+						circle.setFillColor(sf::Color(255, 0, 0, 100));
+						circle.setOutlineColor(sf::Color::Red);
+						circle.setOutlineThickness(2);
+
 						for (int i = 0; i < frames.size(); i++) {
 							auto rect = frames[i];
-							if (rect.contains(sf::Vector2i(viewPortMousePos))) {
+							if (circle.getGlobalBounds().intersects(sf::FloatRect(rect))) {
 								if (isLeftMouseButtonPressed) {
 									frames.erase(frames.begin() + i);
 									break;
 								}
 							}
 						}
+
+						rt.draw(circle);
 					} break;
 
 					default:
