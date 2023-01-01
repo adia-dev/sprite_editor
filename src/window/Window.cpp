@@ -43,6 +43,8 @@ namespace se {
             icons_ranges);
 
 		_imIO->Fonts->AddFontFromFileTTF("../assets/fonts/Operator-Mono/Fonts/OperatorMono-Medium.otf", 20.f);
+		_font.loadFromFile("../assets/fonts/Operator-Mono/Fonts/OperatorMono-Medium.otf");
+		_text.setFont(_font);
 
 		_imIO->IniFilename = "../src/imgui.ini";
 
@@ -137,7 +139,6 @@ namespace se {
 		Components::ShaderEditor();
 		Components::ShaderProperties();
 		Components::OpenCVProperties();
-		// Components::ToolBox();
 
 		ImGui::PopStyleVar();
 		ImGui::PopFont();

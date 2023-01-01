@@ -6,6 +6,23 @@
 #include "window/Window.h"
 
 namespace se {
+
+	enum class Tool {
+		Select,
+		Move,
+		Rotate,
+		Scale,
+		Slice,
+		Rectangle,
+		Ellipse,
+		Line,
+		Polygon,
+		Eraser,
+		Brush,
+		Zoom,
+		Hand,
+		Count
+	};
 	// Application
 	class Application {
 	  public:
@@ -44,6 +61,8 @@ namespace se {
 		int       BoundingRectAreaMin     = 50;
 		double    TreeThresholdMin        = 0.0;
 		double    TreeThresholdMax        = 255.0;
+		bool      ShowFrameNumber         = true;
+		Tool      CurrentTool             = Tool::Select;
 
 	  private:
 		Application();

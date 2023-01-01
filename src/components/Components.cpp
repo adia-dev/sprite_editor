@@ -362,10 +362,10 @@ namespace se {
 		ImGui::Begin("Animation Preview");
 
 		const auto&              frames = Application::Get().GetSpriteManager().GetFrames();
-		static int               index  = 0;
+		int                      index  = Application::Get().GetSpriteManager().GetCurrentFrameIndex();
 		static float             timer  = 0.f;
 		static float             speed  = 1.f;
-		static float             scale  = 1.f;
+		static float             scale  = 1.5f;
 		static sf::RenderTexture rt {};
 		static bool              play            = false;
 		static ImColor           backgroundColor = ImColor(255, 255, 255, 255);
@@ -374,16 +374,21 @@ namespace se {
 
 		ImGui::SliderFloat("Speed", &speed, 0.1f, 10.f);
 		ImGui::SliderFloat("Scale", &scale, 0.1f, 10.f);
-		ImGui::SliderInt("Index", &index, 0, frames.size() - 1);
+		if (ImGui::SliderInt("Index", &index, 0, frames.size() - 1)) {
+			timer = 0.f;
+			play  = false;
+			Application::Get().GetSpriteManager().SetCurrentFrameIndex(index);
+		}
 		ImGui::ColorEdit4("Background Color", (float*)&backgroundColor);
 
 		{
 			if (ImGui::Button(ICON_FA_BACKWARD)) {
-				index = 0;
+				Application::Get().GetSpriteManager().SetCurrentFrameIndex(0);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_BACKWARD_STEP)) {
 				index = std::max(0, index - 1);
+				Application::Get().GetSpriteManager().SetCurrentFrameIndex(index);
 			}
 			ImGui::SameLine();
 			if (play) {
@@ -398,10 +403,12 @@ namespace se {
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_FORWARD_STEP)) {
 				index = std::min(static_cast<int>(frames.size() - 1), index + 1);
+				Application::Get().GetSpriteManager().SetCurrentFrameIndex(index);
 			}
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_FORWARD)) {
 				index = frames.size() - 1;
+				Application::Get().GetSpriteManager().SetCurrentFrameIndex(index);
 			}
 		}
 
@@ -414,14 +421,39 @@ namespace se {
 		if (frames.size() > 0) {
 			if (timer > 0.1f && play) {
 				index = (index + 1) % frames.size();
+				Application::Get().GetSpriteManager().SetCurrentFrameIndex(index);
 				timer = 0.f;
 			}
 
-			sf::Sprite s = Application::Get().GetSpriteManager().GetSprite();
-			s.setTextureRect(frames[index]);
+			sf::Sprite s    = Application::Get().GetSpriteManager().GetSprite();
+			auto       rect = frames[index];
+			rect.left -= s.getPosition().x;
+			rect.top -= s.getPosition().y;
+			s.setTextureRect(rect);
 			s.setScale(scale, scale);
 			s.setOrigin(s.getTextureRect().width / 2.f, s.getTextureRect().height);
-			s.setPosition(renderTextureSize.x / 2.f, renderTextureSize.y / 2.f);
+			// adjust the position y to consider the scale
+			s.setPosition(renderTextureSize.x / 2.f,
+			              renderTextureSize.y / 2.f - (1.f - scale) * s.getTextureRect().height / 2.f);
+			// draw a grid based on the scale
+			{
+				sf::RectangleShape line(sf::Vector2f(renderTextureSize.x, 1.f));
+				line.setFillColor(sf::Color(0, 0, 0, 50));
+				for (int i = 0; i < renderTextureSize.y / scale; i++) {
+					line.setPosition(0.f, i * scale * 5.f);
+					rt.draw(line);
+				}
+
+				line.setSize(sf::Vector2f(1.f, renderTextureSize.y));
+				for (int i = 0; i < renderTextureSize.x / scale; i++) {
+					line.setPosition(i * scale * 5.f, 0.f);
+					rt.draw(line);
+				}
+
+				sf::CircleShape circle(200.f);
+				circle.setFillColor(sf::Color::Black);
+				circle.setPosition(renderTextureSize.x / 2.f, renderTextureSize.y / 2.f);
+			}
 			rt.draw(s);
 			ImGui::Image(rt);
 
@@ -460,6 +492,7 @@ namespace se {
 			bool   isLeftMouseButtonPressed       = Application::Get().GetWindow().GetIsLeftMouseButtonPressed();
 			float  frameHeight                    = ImGui::GetFrameHeight();
 			static ImVec2 gridSize(100, 100);
+			sf::Sprite&   s = Application::Get().GetSpriteManager().GetSprite();
 
 			sf::Vector2f viewPortMousePos =
 			    sf::Vector2f(mousePos.x - viewportPos.x, mousePos.y - viewportPos.y - frameHeight);
@@ -479,63 +512,101 @@ namespace se {
 
 			// Calculate the current mouse position and use it to determine the dimensions of the rectangle
 			if (ImGui::IsMouseDown(0) && isLeftMouseButtonPressed && ImGui::IsWindowFocused()) {
-				float width  = mousePos.x - startLeftMouseButtonPressedPos.x;
-				float height = mousePos.y - startLeftMouseButtonPressedPos.y;
+				switch (Application::Get().CurrentTool) {
+					case Tool::Slice: {
+						float width  = mousePos.x - startLeftMouseButtonPressedPos.x;
+						float height = mousePos.y - startLeftMouseButtonPressedPos.y;
 
-				ImDrawList* draw_list = ImGui::GetWindowDrawList();
-				rect                  = sf::IntRect(static_cast<int>(startLeftMouseButtonPressedPos.x),
-                                   static_cast<int>(startLeftMouseButtonPressedPos.y),
-                                   static_cast<int>(width),
-                                   static_cast<int>(height));
+						ImDrawList* draw_list = ImGui::GetWindowDrawList();
+						rect                  = sf::IntRect(static_cast<int>(startLeftMouseButtonPressedPos.x),
+                                           static_cast<int>(startLeftMouseButtonPressedPos.y),
+                                           static_cast<int>(width),
+                                           static_cast<int>(height));
 
-				// if the end position is less than the start position, swap them
-				if (width < 0) {
-					rect.left += rect.width;
-					rect.width *= -1;
+						// if the end position is less than the start position, swap them
+						if (width < 0) {
+							rect.left += rect.width;
+							rect.width *= -1;
+						}
+						if (height < 0) {
+							rect.top += rect.height;
+							rect.height *= -1;
+						}
+
+						draw_list->AddRect(ImVec2(rect.left, rect.top),
+						                   ImVec2(rect.left + rect.width, rect.top + rect.height),
+						                   IM_COL32(100, 0, 255, 255),
+						                   0.0f,
+						                   15,
+						                   2.0f);
+					}
+						rect.height -= frameHeight;
+
+						if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.width > 0 && rect.height > 0 &&
+						    rect.left + rect.width > 0 && rect.top + rect.height > 0) {
+							rect.left -= viewportPos.x + s.getPosition().x;
+							rect.top -= viewportPos.y + s.getPosition().y;
+							rect.left = std::max(rect.left, 0);
+							rect.top  = std::max(rect.top, 0);
+							rect.width =
+							    std::min(rect.width,
+							             (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().width -
+							                 rect.left);
+							rect.height = std::min(
+							    rect.height,
+							    (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().height -
+							        rect.top);
+
+							if (rect.width < 0) {
+								rect.left += rect.width;
+								rect.width *= -1;
+							}
+
+							frames = Application::Get().GetSpriteManager().SliceSprite(rect);
+							std::for_each(frames.begin(), frames.end(), [&](sf::IntRect& r) {
+								r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
+								r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
+							});
+
+							// sort the frames by their x position and then by their y position
+							// std::sort(frames.begin(), frames.end(), [](sf::IntRect& a, sf::IntRect& b) {
+							// 	if (a.left == b.left) return a.top < b.top;
+							// 	return a.left < b.left;
+							// });
+						}
+						break;
+
+					case Tool::Select:
+						break;
+					case Tool::Move: {
+						for (int i = 0; i < frames.size(); i++) {
+							auto rect = frames[i];
+							if (rect.contains(sf::Vector2i(viewPortMousePos))) {
+								if (isLeftMouseButtonPressed) {
+									rect.left = viewPortMousePos.x - rect.width / 2.f;
+									rect.top  = viewPortMousePos.y - rect.height / 2.f;
+									frames[i] = rect;
+									break;
+								}
+							}
+						}
+					} break;
+
+					case Tool::Eraser: {
+						for (int i = 0; i < frames.size(); i++) {
+							auto rect = frames[i];
+							if (rect.contains(sf::Vector2i(viewPortMousePos))) {
+								if (isLeftMouseButtonPressed) {
+									frames.erase(frames.begin() + i);
+									break;
+								}
+							}
+						}
+					} break;
+
+					default:
+						break;
 				}
-				if (height < 0) {
-					rect.top += rect.height;
-					rect.height *= -1;
-				}
-
-				draw_list->AddRect(ImVec2(rect.left, rect.top),
-				                   ImVec2(rect.left + rect.width, rect.top + rect.height),
-				                   IM_COL32(100, 0, 255, 255),
-				                   0.0f,
-				                   15,
-				                   2.0f);
-			}
-			rect.height -= frameHeight;
-
-			if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.width > 0 && rect.height > 0 &&
-			    rect.left + rect.width > 0 && rect.top + rect.height > 0) {
-				rect.left -= viewportPos.x;
-				rect.top -= viewportPos.y;
-				rect.left = std::max(rect.left, 0);
-				rect.top  = std::max(rect.top, 0);
-				rect.width =
-				    std::min(rect.width,
-				             (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().width - rect.left);
-				rect.height =
-				    std::min(rect.height,
-				             (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().height - rect.top);
-
-				if (rect.width < 0) {
-					rect.left += rect.width;
-					rect.width *= -1;
-				}
-
-				frames = Application::Get().GetSpriteManager().SliceSprite(rect);
-				std::for_each(frames.begin(), frames.end(), [&](sf::IntRect& r) {
-					r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
-					r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
-				});
-
-				// sort the frames by their x position and then by their y position
-				std::sort(frames.begin(), frames.end(), [](sf::IntRect& a, sf::IntRect& b) {
-					if (a.left == b.left) return a.top < b.top;
-					return a.left < b.left;
-				});
 			}
 
 			Application::Get().GetSpriteManager().SetFrames(frames);
@@ -584,6 +655,26 @@ namespace se {
 				// RenderDashedRectangle(rt, Application::Get().GetWindow().GetShader(), rect, color);
 				rt.draw(shape);
 
+				if (Application::Get().ShowFrameNumber) {
+					sf::Text text;
+					text.setString(std::to_string(i));
+					text.setFont(Application::Get().GetWindow().GetFont());
+					text.setCharacterSize(24);
+					text.setFillColor(sf::Color::Black);
+					text.setPosition(rect.left - text.getGlobalBounds().width / 2.f + rect.width / 2.f,
+					                 rect.top - text.getGlobalBounds().height / 2.f + rect.height / 2.f);
+
+					sf::CircleShape circle;
+					circle.setRadius(15.0f);
+					circle.setFillColor(sf::Color(255, 255, 255, 155));
+					circle.setOutlineColor(sf::Color::White);
+					circle.setOutlineThickness(1.0f);
+					circle.setPosition(text.getPosition().x + text.getGlobalBounds().width / 2.f - circle.getRadius(),
+					                   text.getPosition().y + text.getGlobalBounds().height - circle.getRadius());
+					rt.draw(circle);
+					rt.draw(text);
+				}
+
 				ImGui::PopID();
 			}
 
@@ -599,28 +690,8 @@ namespace se {
 			// I want to make a menu like on Blender, it is on the left side of the viewport, vertical buttons that you
 			// can click on to select a tool (like move, scale, rotate, etc)
 			// Set the position of the menu to be on the left side of the viewport
-			ImGui::SetCursorPos(ImVec2(viewportPos.x + 25, viewportPos.y + 50));
-			ImGui::BeginChild("ViewportMenu");
-			{
-				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.65f));
-
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(100, 0));
-				ImGui::Button("Select", ImVec2(100, 100));
-				ImGui::Button("Move", ImVec2(100, 100));
-				ImGui::PopStyleVar();
-
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 50));
-				ImGui::Button("Scale", ImVec2(100, 100));
-				ImGui::Button("Rotate", ImVec2(100, 100));
-				ImGui::PopStyleVar();
-				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(100, 0));
-				ImGui::Button("Shear", ImVec2(100, 100));
-				ImGui::Button("Mirror", ImVec2(100, 100));
-				ImGui::PopStyleVar();
-
-				ImGui::PopStyleColor();
-			}
-			ImGui::EndChild();
+			ImGui::SetCursorPos(ImVec2(viewportPos.x, viewportPos.y + 50));
+			ToolBox();
 		}
 		ImGui::End();
 	}
@@ -806,29 +877,53 @@ namespace se {
 	}
 
 	void Components::ToolBox() {
-		ImGui::Begin("Toolbox");
+		// ImGui::BeginChild("ViewportMenu",
+		//                   ImVec2(0, 0),
+		//                   false,
+		//                   ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.25f, 0.25f, 0.25f, 0.65f));
+		{
+			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Select", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Select;
+			}
 
-		if (ImGui::Button("Select Box")) {
-			Logger::Get().Info("Selected tool: Select box");
+			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Slice", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Slice;
+			}
+
+			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Move", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Move;
+			}
+
+			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Rotate", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Rotate;
+			}
+
+			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Scale", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Scale;
+			}
+
+			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Zoom", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Zoom;
+			}
+
+			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Delete", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Eraser;
+			}
+
+			ImGui::SetCursorPosX(15);
+			// checkboxes
+			ImGui::Checkbox("Show Frame Number", &Application::Get().ShowFrameNumber);
 		}
-
-		if (ImGui::Button("Move")) {
-			Logger::Get().Info("Selected tool: Move");
-		}
-
-		if (ImGui::Button("Delete")) {
-			Logger::Get().Info("Selected tool: Delete");
-		}
-
-		if (ImGui::Button("Scale")) {
-			Logger::Get().Info("Selected tool: Scale");
-		}
-
-		if (ImGui::Button("Transform")) {
-			Logger::Get().Info("Selected tool: Transform");
-		}
-
-		ImGui::End();
+		ImGui::PopStyleColor();
+		// ImGui::EndChild();
 	}
 
 	void Components::RenderDashedRectangle(sf::RenderTarget&  target,

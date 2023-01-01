@@ -57,7 +57,7 @@ namespace se {
 		 *
 		 * @param target The render target to render the sprite to.
 		 */
-		void Render(sf::RenderTarget &target) const;
+		void Render(sf::RenderTarget &target);
 
 		/**
 		 * @brief Loads a sprite from file and sets it as the sprite managed by
@@ -211,6 +211,7 @@ namespace se {
 
 		void DeleteFrame(int index);
 		void AddFrame(const sf::IntRect &frame, int index = -1);
+		void AddFrames(const std::vector<sf::IntRect> &frames, int index = -1);
 
 		void  SetAnimationTimer(float t);
 		float GetAnimationTimer() const;

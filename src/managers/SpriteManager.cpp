@@ -16,7 +16,9 @@ namespace se {
 		return _sprite;
 	}
 
-	void SpriteManager::Render(sf::RenderTarget& target) const {
+	void SpriteManager::Render(sf::RenderTarget& target) {
+		_sprite.setPosition(sf::Vector2f(target.getSize().x / 2.f - _sprite.getGlobalBounds().width / 2.f,
+		                                 target.getSize().y / 2.f - _sprite.getGlobalBounds().height / 2.f));
 		target.draw(_sprite);
 	}
 
@@ -256,7 +258,17 @@ namespace se {
 		_currentFrameIndex = _frames.size() ? 0 : -1;
 	}
 
-	void SpriteManager::AddFrame(const sf::IntRect& frame, int index) {}
+	void SpriteManager::AddFrame(const sf::IntRect& frame, int index) {
+		if (index < 0 || index >= _frames.size()) return;
+
+		_frames.insert(_frames.begin() + index, frame);
+	}
+
+	void SpriteManager::AddFrames(const std::vector<sf::IntRect>& frames, int index) {
+		if (index < 0 || index >= _frames.size()) return;
+
+		_frames.insert(_frames.begin() + index, frames.begin(), frames.end());
+	}
 
 	void SpriteManager::SetAnimationTimer(float t) {
 		_animationTimer = t;

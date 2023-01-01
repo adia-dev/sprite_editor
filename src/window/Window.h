@@ -28,6 +28,8 @@ namespace se {
 		bool GetShowGrid() const { return _showGrid; }
 		void SetShowGrid(bool state) { _showGrid = state; }
 
+		sf::Font& GetFont() { return _font; }
+
 	  private:
 		uint16_t _width  = 2560;
 		uint16_t _height = 1600;
@@ -41,6 +43,8 @@ namespace se {
 		// ImGui variables
 		ImFont*  _imFont = nullptr;
 		ImGuiIO* _imIO   = nullptr;
+		sf::Font _font;
+		sf::Text _text;
 
 		ImVec2 _mousePos;
 		ImVec2 _startLeftMouseButtonPressedPos;
