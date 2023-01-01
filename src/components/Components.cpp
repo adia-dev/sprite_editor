@@ -510,6 +510,12 @@ namespace se {
 			Application::Get().GetSpriteManager().Render(rt);
 			ImGui::Image(rt);
 
+			// if backspace is pressed, delete the current frame
+			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace))) {
+				Application::Get().GetSpriteManager().DeleteFrame(
+				    Application::Get().GetSpriteManager().GetCurrentFrameIndex());
+			}
+
 			// Calculate the current mouse position and use it to determine the dimensions of the rectangle
 			if (ImGui::IsMouseDown(0) && isLeftMouseButtonPressed && ImGui::IsWindowFocused()) {
 				switch (Application::Get().CurrentTool) {
@@ -583,8 +589,41 @@ namespace se {
 							auto rect = frames[i];
 							if (rect.contains(sf::Vector2i(viewPortMousePos))) {
 								if (isLeftMouseButtonPressed) {
-									rect.left = viewPortMousePos.x - rect.width / 2.f;
-									rect.top  = viewPortMousePos.y - rect.height / 2.f;
+									// if the shift key is pressed, move the frame vertically or horizontally
+									if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+										if (std::abs(mousePos.x - startLeftMouseButtonPressedPos.x) >
+										    std::abs(mousePos.y - startLeftMouseButtonPressedPos.y)) {
+											rect.left = viewPortMousePos.x - rect.width / 2.f;
+										} else {
+											rect.top = viewPortMousePos.y - rect.height / 2.f;
+										}
+
+										// draw a green line to show the direction of the movement vertically and red
+										// for horizontally
+										sf::RectangleShape line;
+										line.setFillColor(sf::Color::Green);
+										line.setSize(sf::Vector2f(1, rect.top));
+										line.setPosition(rect.left + rect.width / 2.f, 0);
+										rt.draw(line);
+
+										line.setSize(sf::Vector2f(1, viewportSize.y - rect.top));
+										line.setPosition(rect.left + rect.width / 2.f, rect.top + rect.height);
+										rt.draw(line);
+
+										line.setFillColor(sf::Color::Red);
+										line.setSize(sf::Vector2f(rect.left, 1));
+										line.setPosition(0, rect.top + rect.height / 2.f);
+										rt.draw(line);
+
+										line.setSize(sf::Vector2f(viewportSize.x - rect.left, 1));
+										line.setPosition(rect.left + rect.width, rect.top + rect.height / 2.f);
+										rt.draw(line);
+
+									} else {
+										rect.left = viewPortMousePos.x - rect.width / 2.f;
+										rect.top  = viewPortMousePos.y - rect.height / 2.f;
+									}
+
 									frames[i] = rect;
 									break;
 								}
