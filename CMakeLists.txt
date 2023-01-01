@@ -21,8 +21,11 @@ set(IMGUI_DIR include/imgui)
 # Set the FontAwesome include directory
 set(FA_DIR include/FontAwesome)
 
+# Set the tinyxml2 include directory
+set(TINYXML2_DIR include/tinyxml2)
+
 # Add the ImGui and src directories to the include path
-include_directories(src/ ${IMGUI_DIR} ${IMGUI_DIR}/backends ${FA_DIR} ..)
+include_directories(src/ ${IMGUI_DIR} ${IMGUI_DIR}/backends ${FA_DIR} ${TINYXML2_DIR} ..)
 
 # Add the OpenCV include directory to the include path
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -52,7 +55,7 @@ file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp)
 add_compile_definitions(GL_SILENCE_DEPRECATION)
 
 # Add the app executable target, linking to the SFML, OpenGL, and OpenCV libraries, as well as the ImGui source files
-add_executable(app ${SRC_FILES} ${IMGUI_SRC})
+add_executable(app ${SRC_FILES} ${IMGUI_SRC} ${TINYXML2_DIR}/tinyxml2.cpp)
 target_link_libraries(app PRIVATE ${SFML_LIBS} ${LIBRARIES} ${OpenCV_LIBS})
 
 # Set the C++ standard for the app target to C++17

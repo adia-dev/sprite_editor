@@ -204,6 +204,7 @@ namespace se {
 		std::vector<sf::IntRect> &GetFrames();
 
 		void SetCurrentFrameIndex(int index);
+		void SwapFrames(int index1, int index2);
 		int  GetCurrentFrameIndex() const;
 
 		sf::IntRect GetCurrentFrame() const;

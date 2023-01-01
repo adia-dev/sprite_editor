@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/Logger.h"
+#include "core/Serializer.h"
 
 #define INTERPOLATE(format, ...)                \
 	({                                          \

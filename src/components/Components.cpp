@@ -25,6 +25,17 @@ namespace se {
 					}
 					if (ImGui::MenuItem("Save As...")) {
 					}
+					if (ImGui::MenuItem("Save as XML")) {
+						Logger::Get().Info("Save as XML");
+						Serializer::SaveFramesToXML("../out/animations.xml",
+						                            Application::Get().GetSpriteManager().GetFrames());
+					}
+					if (ImGui::MenuItem("Load XML file")) {
+						Logger::Get().Info("Load XML file");
+						auto frames = Serializer::LoadFramesFromXML("../out/animations.xml");
+						// std::for_each
+						Application::Get().GetSpriteManager().SetFrames(frames);
+					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Exit")) {
 						Application::Get().Quit();
@@ -346,6 +357,24 @@ namespace se {
 					s.setTextureRect(currentFrame);
 					s.setScale(2.f, 2.f);
 					ImGui::Image(s);
+
+					int frameIndex = Application::Get().GetSpriteManager().GetCurrentFrameIndex();
+					// a selectable list of frames
+					ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+					if (ImGui::TreeNode("Frames")) {
+						for (int i = 0; i < Application::Get().GetSpriteManager().GetFrames().size(); ++i) {
+							ImGui::PushID(i);
+							char label[256];
+							snprintf(label, IM_ARRAYSIZE(label), "Frame %d", i);
+							if (ImGui::Selectable(label, i == frameIndex)) {
+								Application::Get().GetSpriteManager().SwapFrames(frameIndex, i);
+								Application::Get().GetSpriteManager().SetCurrentFrameIndex(i);
+							}
+							ImGui::PopID();
+						}
+						ImGui::TreePop();
+					}
+
 					ImGui::TreePop();
 				}
 
@@ -545,7 +574,6 @@ namespace se {
 						                   0.0f,
 						                   15,
 						                   2.0f);
-					}
 						rect.height -= frameHeight;
 
 						if (isLeftMouseButtonPressed && ImGui::IsWindowFocused() && rect.width > 0 && rect.height > 0 &&
@@ -568,7 +596,13 @@ namespace se {
 								rect.width *= -1;
 							}
 
-							frames = Application::Get().GetSpriteManager().SliceSprite(rect);
+							auto newFrames = Application::Get().GetSpriteManager().SliceSprite(rect);
+
+							if (Application::Get().AppendFrames) {
+								frames.insert(frames.end(), newFrames.begin(), newFrames.end());
+							} else {
+								frames = newFrames;
+							}
 							std::for_each(frames.begin(), frames.end(), [&](sf::IntRect& r) {
 								r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
 								r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
@@ -580,9 +614,70 @@ namespace se {
 							// 	return a.left < b.left;
 							// });
 						}
-						break;
+					} break;
 
 					case Tool::Select:
+						break;
+					case Tool::Append: {
+						float width  = mousePos.x - startLeftMouseButtonPressedPos.x;
+						float height = mousePos.y - startLeftMouseButtonPressedPos.y;
+
+						ImDrawList* draw_list = ImGui::GetWindowDrawList();
+						rect                  = sf::IntRect(static_cast<int>(startLeftMouseButtonPressedPos.x),
+                                           static_cast<int>(startLeftMouseButtonPressedPos.y),
+                                           static_cast<int>(width),
+                                           static_cast<int>(height));
+
+						// if the end position is less than the start position, swap them
+						if (width < 0) {
+							rect.left += rect.width;
+							rect.width *= -1;
+						}
+						if (height < 0) {
+							rect.top += rect.height;
+							rect.height *= -1;
+						}
+
+						draw_list->AddRect(ImVec2(rect.left, rect.top),
+						                   ImVec2(rect.left + rect.width, rect.top + rect.height),
+						                   IM_COL32(100, 0, 255, 255),
+						                   0.0f,
+						                   15,
+						                   2.0f);
+						rect.height -= frameHeight;
+
+						if (isLeftMouseButtonPressed && ImGui::IsMouseReleased(0) && ImGui::IsWindowFocused() &&
+						    rect.width > 0 && rect.height > 0 && rect.left + rect.width > 0 &&
+						    rect.top + rect.height > 0) {
+							rect.left -= viewportPos.x + s.getPosition().x;
+							rect.top -= viewportPos.y + s.getPosition().y;
+							rect.left = std::max(rect.left, 0);
+							rect.top  = std::max(rect.top, 0);
+							rect.width =
+							    std::min(rect.width,
+							             (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().width -
+							                 rect.left);
+							rect.height = std::min(
+							    rect.height,
+							    (int)Application::Get().GetSpriteManager().GetSprite().getTextureRect().height -
+							        rect.top);
+
+							if (rect.width < 0) {
+								rect.left += rect.width;
+								rect.width *= -1;
+							}
+
+							auto newFrames = Application::Get().GetSpriteManager().SliceSprite(rect);
+
+							frames.insert(frames.end(), newFrames.begin(), newFrames.end());
+
+							std::for_each(frames.begin(), frames.end(), [&](sf::IntRect& r) {
+								r.left += startLeftMouseButtonPressedPos.x - viewportPos.x;
+								r.top += startLeftMouseButtonPressedPos.y - viewportPos.y;
+							});
+						}
+					} break;
+					case Tool::Animation:
 						break;
 					case Tool::Move: {
 						for (int i = 0; i < frames.size(); i++) {
@@ -943,6 +1038,11 @@ namespace se {
 			}
 
 			ImGui::SetCursorPosX(15);
+			if (ImGui::Button("Append", ImVec2(100, 100))) {
+				Application::Get().CurrentTool = Tool::Append;
+			}
+
+			ImGui::SetCursorPosX(15);
 			if (ImGui::Button("Move", ImVec2(100, 100))) {
 				Application::Get().CurrentTool = Tool::Move;
 			}
@@ -970,6 +1070,17 @@ namespace se {
 			ImGui::SetCursorPosX(15);
 			// checkboxes
 			ImGui::Checkbox("Show Frame Number", &Application::Get().ShowFrameNumber);
+
+			ImGui::SetCursorPosX(15);
+			// checkboxes
+			ImGui::Checkbox("Append Frames", &Application::Get().AppendFrames);
+
+			ImGui::SetCursorPosX(15);
+			// checkboxes
+			bool showGrid = Application::Get().GetWindow().GetShowGrid();
+			if (ImGui::Checkbox("Show Grid", &showGrid)) {
+				Application::Get().GetWindow().ToggleShowGrid();
+			}
 		}
 		ImGui::PopStyleColor();
 		// ImGui::EndChild();

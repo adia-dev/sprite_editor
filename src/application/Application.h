@@ -9,6 +9,7 @@ namespace se {
 
 	enum class Tool {
 		Select,
+		Append,
 		Move,
 		Rotate,
 		Scale,
@@ -16,6 +17,7 @@ namespace se {
 		Rectangle,
 		Ellipse,
 		Line,
+		Animation,
 		Polygon,
 		Eraser,
 		Brush,
@@ -62,6 +64,7 @@ namespace se {
 		double    TreeThresholdMin        = 0.0;
 		double    TreeThresholdMax        = 255.0;
 		bool      ShowFrameNumber         = true;
+		bool      AppendFrames            = false;
 		Tool      CurrentTool             = Tool::Select;
 
 	  private:

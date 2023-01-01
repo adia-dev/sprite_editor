@@ -231,6 +231,14 @@ namespace se {
 		_currentFrameIndex = index;
 	}
 
+	void SpriteManager::SwapFrames(int index1, int index2) {
+		if (index1 < 0 || index1 >= _frames.size() || index2 < 0 || index2 >= _frames.size()) return;
+
+		sf::IntRect temp = _frames[index1];
+		_frames[index1]  = _frames[index2];
+		_frames[index2]  = temp;
+	}
+
 	int SpriteManager::GetCurrentFrameIndex() const {
 		if (_currentFrameIndex < 0 || _currentFrameIndex >= _frames.size()) return -1;
 

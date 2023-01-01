@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Maths.h"
+#include "utils/Maths.h"
 
 namespace se {
 
@@ -9,17 +9,15 @@ namespace se {
 		File() {}
 		~File() {}
 
-		static std::string
-		Dialog(const std::string& label = "Select a file: ") {
+		static std::string Dialog(const std::string& label = "Select a file: ") {
 			FILE*       fp;
 			int         status;
 			char        c_path[PATH_MAX];
-			std::string osaCmd =
-			    "osascript -e 'set fileAlias to choose file with "
-			    "prompt \"" +
-			    label +
-			    "\"' -e 'set filePath to "
-			    "POSIX path of fileAlias'";
+			std::string osaCmd = "osascript -e 'set fileAlias to choose file with "
+			                     "prompt \"" +
+			                     label +
+			                     "\"' -e 'set filePath to "
+			                     "POSIX path of fileAlias'";
 
 			fp = popen(osaCmd.c_str(), "r");
 			if (fp == NULL) {
@@ -41,10 +39,8 @@ namespace se {
 			return c_path;
 		}
 
-		static bool Exists(std::filesystem::path& path,
-		                   bool                   directory = false) {
-			return std::filesystem::exists(path) &&
-			       std::filesystem::is_directory(path) == directory;
+		static bool Exists(std::filesystem::path& path, bool directory = false) {
+			return std::filesystem::exists(path) && std::filesystem::is_directory(path) == directory;
 		}
 
 	  private:
