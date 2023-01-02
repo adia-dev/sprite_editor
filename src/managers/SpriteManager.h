@@ -220,6 +220,8 @@ namespace se {
 		void UpdateAnimation(float dt);
 		void RenderAnimation(sf::RenderTarget &target);
 
+		char AnimationName[256] = {"Idle"};
+
 	  private:
 		sf::Sprite _sprite;          // The sprite managed by the SpriteManager.
 		sf::Sprite _animationSprite; // The sprite used for rendering the animation.

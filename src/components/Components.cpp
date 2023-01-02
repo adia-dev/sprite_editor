@@ -401,6 +401,10 @@ namespace se {
 
 		timer += speed * ImGui::GetIO().DeltaTime;
 
+		ImGui::InputText("Name",
+		                 Application::Get().GetSpriteManager().AnimationName,
+		                 IM_ARRAYSIZE(Application::Get().GetSpriteManager().AnimationName));
+
 		ImGui::SliderFloat("Speed", &speed, 0.1f, 10.f);
 		ImGui::SliderFloat("Scale", &scale, 0.1f, 10.f);
 		if (ImGui::SliderInt("Index", &index, 0, frames.size() - 1)) {

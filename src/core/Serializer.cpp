@@ -3,6 +3,8 @@
 //
 #include "Serializer.h"
 
+#include "application/Application.h"
+
 #include <tinyxml2.h>
 
 namespace se {
@@ -20,7 +22,10 @@ namespace se {
 		tinyxml2::XMLDocument doc;
 
 		// Create the root element
-		tinyxml2::XMLElement* root = doc.NewElement("Animation");
+		tinyxml2::XMLElement* root      = doc.NewElement("Animations");
+		tinyxml2::XMLElement* animation = doc.NewElement("Animation");
+		animation->SetAttribute("count", (int)frames.size());
+		animation->SetAttribute("name", Application::Get().GetSpriteManager().AnimationName);
 		doc.InsertFirstChild(root);
 
 		// Add the frames to the root element
@@ -30,8 +35,10 @@ namespace se {
 			element->SetAttribute("y", frame.top);
 			element->SetAttribute("width", frame.width);
 			element->SetAttribute("height", frame.height);
-			root->InsertEndChild(element);
+			animation->InsertEndChild(element);
 		}
+
+		root->InsertEndChild(animation);
 
 		// Save the XML document to a file
 		doc.SaveFile(path.string().c_str());
@@ -57,6 +64,17 @@ namespace se {
 
 		// Get the root element
 		tinyxml2::XMLElement* root = doc.FirstChildElement("Animation");
+		if (root == nullptr) {
+			Logger::Get().Error("[Serializer] The root element is not 'Animation'");
+			return frames;
+		}
+
+		char* name = (char*)root->Attribute("name");
+		if (name == nullptr) {
+			Logger::Get().Error("[Serializer] The attribute 'name' is missing");
+			return frames;
+		}
+		snprintf(Application::Get().GetSpriteManager().AnimationName, strlen(name) + 1, "%s", name);
 
 		// Get the frames from the root element
 		for (tinyxml2::XMLElement* element = root->FirstChildElement("Frame"); element != nullptr;
