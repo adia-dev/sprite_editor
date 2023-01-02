@@ -26,15 +26,11 @@ namespace se {
 		void Render(sf::RenderTarget &target);
 
 		void LoadSprite(const std::string &filepath);
-
 		void LoadSprite(sf::Texture &texture);
 
-		std::vector<sf::IntRect> SliceSprite(const sf::IntRect &roiRect = {0, 0, 0, 0});
-
+		std::vector<sf::IntRect>        SliceSprite(const sf::IntRect &roiRect = {0, 0, 0, 0});
 		static std::vector<sf::IntRect> SliceSprite(const sf::Texture &texture, const sf::IntRect &roiRect);
-
 		static std::vector<sf::IntRect> SliceSprite(const std::string &filepath);
-
 		static std::vector<sf::IntRect> SliceSprite(const std::string &filepath, const sf::IntRect &roiRect);
 
 		static cv::Mat TextureToOpenCVMat(const sf::Texture &texture);
