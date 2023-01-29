@@ -63,28 +63,38 @@ namespace se {
 		doc.LoadFile(path.string().c_str());
 
 		// Get the root element
-		tinyxml2::XMLElement* root = doc.FirstChildElement("Animation");
+		tinyxml2::XMLElement* root = doc.FirstChildElement("Animations");
 		if (root == nullptr) {
-			Logger::Get().Error("[Serializer] The root element is not 'Animation'");
+			Logger::Get().Error("[Serializer] The root element is not 'Animations'");
 			return frames;
 		}
 
-		char* name = (char*)root->Attribute("name");
-		if (name == nullptr) {
-			Logger::Get().Error("[Serializer] The attribute 'name' is missing");
-			return frames;
-		}
-		snprintf(Application::Get().GetSpriteManager().AnimationName, strlen(name) + 1, "%s", name);
+		for (tinyxml2::XMLElement* element = root->FirstChildElement("Animation"); element != nullptr;
+		     element                       = element->NextSiblingElement("Animation")) {
+			int count = 0;
+			element->QueryIntAttribute("count", &count);
+			if (count == 0) {
+				Logger::Get().Error("[Serializer] The attribute 'count' is missing");
+				return frames;
+			}
 
-		// Get the frames from the root element
-		for (tinyxml2::XMLElement* element = root->FirstChildElement("Frame"); element != nullptr;
-		     element                       = element->NextSiblingElement("Frame")) {
-			int x, y, width, height;
-			element->QueryIntAttribute("x", &x);
-			element->QueryIntAttribute("y", &y);
-			element->QueryIntAttribute("width", &width);
-			element->QueryIntAttribute("height", &height);
-			frames.emplace_back(x, y, width, height);
+			char* name = (char*)element->Attribute("name");
+			if (name == nullptr) {
+				Logger::Get().Error("[Serializer] The attribute 'name' is missing");
+				return frames;
+			}
+			snprintf(Application::Get().GetSpriteManager().AnimationName, strlen(name) + 1, "%s", name);
+
+			// Get the frames from the root element
+			for (tinyxml2::XMLElement* frame = element->FirstChildElement("Frame"); frame != nullptr;
+			     frame                       = frame->NextSiblingElement("Frame")) {
+				int x, y, width, height;
+				frame->QueryIntAttribute("x", &x);
+				frame->QueryIntAttribute("y", &y);
+				frame->QueryIntAttribute("width", &width);
+				frame->QueryIntAttribute("height", &height);
+				frames.emplace_back(x, y, width, height);
+			}
 		}
 
 		return frames;

@@ -466,8 +466,7 @@ namespace se {
 			s.setScale(scale, scale);
 			s.setOrigin(s.getTextureRect().width / 2.f, s.getTextureRect().height);
 			// adjust the position y to consider the scale
-			s.setPosition(renderTextureSize.x / 2.f,
-			              renderTextureSize.y / 2.f - (1.f - scale) * s.getTextureRect().height / 2.f);
+			s.setPosition(renderTextureSize.x / 2.f, renderTextureSize.y / 2.f - (1.f - scale) * 50.f);
 			// draw a grid based on the scale
 			{
 				sf::RectangleShape line(sf::Vector2f(renderTextureSize.x, 1.f));

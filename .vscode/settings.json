@@ -111,5 +111,10 @@
     "stop_token": "cpp",
     "codecvt": "cpp",
     "*.ipp": "cpp"
+  },
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#110F97",
+    "titleBar.activeBackground": "#1714D3",
+    "titleBar.activeForeground": "#FBFBFF"
   }
 }
